@@ -1,7 +1,56 @@
 @import "tailwindcss";
+:root {
+  color-scheme: dark;
+  --app-bg: #18181b;
+  --app-surface: #09090b;
+  --app-surface-2: #18181b;
+  --app-border: #27272a;
+  --app-fg: #ffffff;
+  --app-muted: #a1a1aa;
+  --app-accent: #ffffff;
+  --app-accent-fg: #09090b;
+  --app-accent-hover: #e4e4e7;
+  --app-shadow: rgba(0, 0, 0, 0.4);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --app-bg: #f4f4f5;
+  --app-surface: #ffffff;
+  --app-surface-2: #fafafa;
+  --app-border: #d4d4d8;
+  --app-fg: #09090b;
+  --app-muted: #52525b;
+  --app-accent: #09090b;
+  --app-accent-fg: #ffffff;
+  --app-accent-hover: #27272a;
+  --app-shadow: rgba(9, 9, 11, 0.12);
+}
+
+button,
+a {
+  transition: transform 150ms ease, opacity 150ms ease, background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+button:active,
+a:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
 body {
-  background-color: #18181b;
-  color: white;
+  background-color: var(--app-bg);
+  color: var(--app-fg);
   margin: 0;
   font-family: sans-serif;
+}
+
+#root {
+  min-height: 100vh;
+  background: var(--app-bg);
+  color: var(--app-fg);
 }
