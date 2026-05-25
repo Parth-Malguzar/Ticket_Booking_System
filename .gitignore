@@ -1,1 +1,5 @@
 .github
+.env
+.env.local
+backend/.env
+frontend/.env.local
