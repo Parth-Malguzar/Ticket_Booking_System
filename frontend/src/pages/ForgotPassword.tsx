@@ -34,44 +34,64 @@ const ForgotPassword = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[var(--app-bg)] text-[var(--app-fg)] flex items-center justify-center px-4 py-12">
-            <div className="relative w-full max-w-md overflow-hidden rounded-3xl border border-[var(--app-border)] bg-[var(--app-surface)] p-8 shadow-2xl shadow-black/40">
+        <div className="min-h-screen bg-[--app-bg] text-[--app-fg] flex items-center justify-center px-4 py-12">
+            <div className="relative w-full max-w-md overflow-hidden rounded-3xl border border-[--app-border] bg-[--app-surface] p-8 shadow-2xl shadow-black/40">
                 <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_45%)]" />
+
                 <div className="relative mb-8 text-center">
-                    <p className="text-sm uppercase tracking-[0.3em] text-[var(--app-muted)]">Recover access</p>
-                    <h1 className="mt-3 text-3xl font-semibold text-[var(--app-fg)]">Forgot your password?</h1>
-                    <p className="mt-2 text-sm text-[var(--app-muted)]">
+                    <p className="text-sm uppercase tracking-[0.3em] text-[--app-muted]">
+                        Recover access
+                    </p>
+
+                    <h1 className="mt-3 text-3xl font-semibold text-[--app-fg]">
+                        Forgot your password?
+                    </h1>
+
+                    <p className="mt-2 text-sm text-[--app-muted]">
                         Enter the email linked to your account and we&apos;ll send a reset link.
                     </p>
                 </div>
 
-                <form className="relative space-y-4" onSubmit={handleSubmit}>
+                <form
+                    className="relative space-y-4"
+                    onSubmit={handleSubmit}
+                >
                     <div>
-                        <label htmlFor="email" className="mb-2 block text-sm font-medium text-[var(--app-fg)]">
+                        <label
+                            htmlFor="email"
+                            className="mb-2 block text-sm font-medium text-[--app-fg]"
+                        >
                             Email
                         </label>
+
                         <input
                             id="email"
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             placeholder="name@example.com"
-                            className="w-full rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-2)] px-4 py-3 text-[var(--app-fg)] outline-none transition-colors placeholder:text-[var(--app-muted)] focus:border-[var(--app-accent)]"
+                            className="w-full rounded-xl border border-[--app-border] bg-[--app-surface-2] px-4 py-3 text-[--app-fg] outline-none transition-colors placeholder:text-[--app-muted] focus:border-[--app-accent]"
                         />
                     </div>
 
                     <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="w-full rounded-xl bg-[var(--app-accent)] px-4 py-3 font-semibold text-[var(--app-accent-fg)] transition-all hover:bg-[var(--app-accent-hover)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
+                        className="w-full rounded-xl bg-[--app-accent] px-4 py-3 font-semibold text-[--app-accent-fg] transition-all hover:bg-[--app-accent-hover] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
                     >
-                        {isSubmitting ? "Sending link..." : "Send reset link"}
+                        {isSubmitting
+                            ? "Sending link..."
+                            : "Send reset link"}
                     </button>
                 </form>
 
-                <p className="relative mt-6 text-center text-sm text-[var(--app-muted)]">
+                <p className="relative mt-6 text-center text-sm text-[--app-muted]">
                     Remembered your password?{" "}
-                    <Link to="/login" className="font-medium text-[var(--app-fg)] hover:underline">
+
+                    <Link
+                        to="/login"
+                        className="font-medium text-[--app-fg] hover:underline"
+                    >
                         Back to login
                     </Link>
                 </p>

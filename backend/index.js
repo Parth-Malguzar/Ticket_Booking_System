@@ -3,16 +3,18 @@ import dotenv from "dotenv";
 import cors from "cors";
 import mongoose from "mongoose";
 import { authRoute } from "./routes/authRoute.js";
+import cookieParser from "cookie-parser";
 dotenv.config();
 const app = express();
 // allow frontend origin and parse JSON bodies
 app.use(
   cors({
     origin: process.env.FRONTEND_ORIGIN,
-    credentials: true,
+    credentials: true,//imp for cookie transmission (allow it in frontend also, in axios)
   }),
 );
 app.use(express.json()); //without this req.body will be undefined
+app.use(cookieParser())//to read cookies req.cookies.token
 app.use((req,res,next)=>{//didn't work as of now
 
    res.setHeader(

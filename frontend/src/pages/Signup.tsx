@@ -23,7 +23,7 @@ const Signup = () => {
     try {
       const res = await api.post("/auth/google", { token });
       toast.success(res.data.message)
-      login(res.data.user, res.data.token,true);
+      login(res.data.user);
     } catch (error) {
       console.log("google signup failed", error);
     }
@@ -39,7 +39,7 @@ const Signup = () => {
     try {
       const res = await api.post("/auth/signup", { name, email, password });
       toast.success(res.data.message)
-      login(res.data.user, res.data.token,true);
+      login(res.data.user);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.log("google signup failed", error.response?.data?.message);

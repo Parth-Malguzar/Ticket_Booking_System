@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
 const loginController = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, rememberMe } = req.body;
   try {
     const user = await User.findOne({
       email,
@@ -20,6 +20,7 @@ const loginController = async (req, res) => {
         message: "Incorrect email or password.",
       });
     }
+    const jwtOptions = rememberMe ? { expiresIn: "2d" } : {};
     const authToken = jwt.sign(
       {
         userId: user._id,
@@ -27,18 +28,31 @@ const loginController = async (req, res) => {
         role: user.role,
       },
       process.env.JWT_SECRET,
-      {
-        expiresIn: "7d",
-      },
+      jwtOptions,
     );
+    //previously we were using localstorage now we will use cookies which is automatic
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",//didn't understand
+    };
+
+    if (rememberMe) {
+      cookieOptions.maxAge = 2 * 24 * 60 * 60 * 1000;
+    }
+
+    res.cookie("token", authToken, cookieOptions);
+
     return res.status(200).json({
       message: "Login successful",
-      token: authToken,
+      //don't pass token here
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
+        balance:user.balance
       },
     });
   } catch (error) {

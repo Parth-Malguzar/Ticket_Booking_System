@@ -14,11 +14,11 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [remeberMe, setRemeberMe] = useState(false)
+  const [rememberMe, setRememberMe] = useState(false)
 
   useEffect(() => {
-    console.log(remeberMe);
-  }, [remeberMe])
+    console.log(rememberMe);
+  }, [rememberMe])
   
   const navigate = useNavigate()
   const handleSuccess = async (credentialResponse: CredentialResponse) => {
@@ -26,8 +26,8 @@ const Login = () => {
     if (!token) return;
 
     try {
-      const res = await api.post("/auth/google", { token });
-      login(res.data.user, res.data.token,remeberMe)//given by oauthcontroller
+      const res = await api.post("/auth/google", { token,rememberMe });
+      login(res.data.user)//given by oauthcontroller
       console.log(res.data.user);
 
       toast.success(res.data.message)
@@ -60,10 +60,10 @@ const Login = () => {
 
       const res = await api.post(
         "/auth/login",
-        { email, password }
+        { email, password, rememberMe }
       )
 
-      login(res.data.user, res.data.token,remeberMe)//updates user state
+      login(res.data.user)//updates user state
       console.log(res);
 
       toast.success("Login Successful")
@@ -144,7 +144,7 @@ const Login = () => {
 
           <div className="flex items-center justify-between text-sm">
             <label className="flex items-center gap-2 text-(--app-muted)">
-              <input type="checkbox" onClick={()=>setRemeberMe(prev=>!prev)}
+              <input type="checkbox" onClick={()=>setRememberMe(prev=>!prev)}
                className="rounded border-zinc-700 bg-zinc-900 text-white focus:ring-0" />
               Remember me
             </label>

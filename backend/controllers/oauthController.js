@@ -8,7 +8,7 @@ const googleClient = new OAuth2Client(process.env.OAUTH_CLIENT_ID);
 
 const oauthController = async (req, res) => {
   try {
-    const { token } = req.body;
+    const { token,rememberMe } = req.body;
     if (!token) {
       return res
         .status(400)
@@ -49,15 +49,21 @@ const oauthController = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "7d" },
     );
-
+    res.cookie("token",authToken,{
+      httpOnly:true,//frontend js can't access cookies with dom
+      secure:process.env.NODE_ENV==="production",
+      sameSite:"strict",
+      maxAge:24*60*60*1000//ms equivalent to a day
+    })
     return res.status(200).json({
       message: "Signed in with Google successfully.",
-      token: authToken,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
+        balance:user.balance
+
       },
     });
   } catch (error) {

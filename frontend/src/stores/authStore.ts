@@ -1,69 +1,40 @@
 import { create } from "zustand";
 import type { User } from "../types";
+import api from "../lib/axios.ts";
 
 interface AuthStore {
   user: User | null;
-  token: string | null;
-
-  login: (
-    user: User,
-    token: string,
-    isRemember: boolean
-  ) => void;
-
-  logout: () => void;
+  login: (user: User) => void;
+  setUser: (user: User | null) => void;
+  logout: () => Promise<void>;
 }
 
-const storage =//check after each refresh
-  localStorage.getItem("token")
-    ? localStorage
-    : sessionStorage;
+export const useAuthStore = create<AuthStore>((set) => ({
+  user: JSON.parse(localStorage.getItem("user") || "null"),
 
-export const useAuthStore =
-  create<AuthStore>((set) => ({
+  login: (user) => {
+    localStorage.setItem("user", JSON.stringify(user));
+    set({ user });
+  },
 
-    user: JSON.parse(
-      storage.getItem("user") || "null"
-    ),
-
-    token: JSON.parse(
-      storage.getItem("token") || "null"
-    ),
-
-    login: (
-      user,
-      token,
-      isRemember
-    ) => {
-
-      const storage = isRemember//check wrt remember me checkbox
-        ? localStorage
-        : sessionStorage;
-
-      storage.setItem(
-        "user",
-        JSON.stringify(user)
-      );
-
-      storage.setItem(
-        "token",
-        JSON.stringify(token)
-      );
-
-      set({ user, token });
-    },
-
-    logout: () => {
-
+  setUser: (user) => {
+    if (user) {
+      localStorage.setItem("user", JSON.stringify(user));
+    } else {
       localStorage.removeItem("user");
-      localStorage.removeItem("token");
+    }
+    set({ user });
+  },
 
-      sessionStorage.removeItem("user");
-      sessionStorage.removeItem("token");
-
-      set({
-        user: null,
-        token: null,
-      });
-    },
+  logout: async () => {
+    try {
+      await api.post("/auth/logout");//remove cookie
+    } catch (err) {
+      // ignore network/server errors but ensure client state cleared
+      console.warn("Logout request failed", err);
+    } finally {
+      localStorage.removeItem("user");
+      set({ user: null });
+    }
+  },
 }));
