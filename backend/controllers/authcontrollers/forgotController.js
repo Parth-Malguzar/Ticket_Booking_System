@@ -1,4 +1,4 @@
-import { User } from "../models/userModel.js";
+import { User } from "../../models/userModel.js";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 const forgotController = async (req, res) => {
@@ -8,10 +8,22 @@ const forgotController = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "Email not found" });
     }
+    const jwtSecret = process.env.JWT_SECRET;
+
+    if (!jwtSecret) {
+      throw new Error("JWT_SECRET is not defined");
+    }
+
     const resetToken = jwt.sign(
-      { userId: user._id, email: user.email, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "5m" },
+      {
+        userId: user._id,
+        email: user.email,
+        role: user.role,
+      },
+      jwtSecret,
+      {
+        expiresIn: "5m",
+      },
     );
     //change this link url if deploying
     const resetLink = `http://localhost:5173/reset-password/${encodeURIComponent(resetToken)}`;
@@ -32,7 +44,7 @@ const forgotController = async (req, res) => {
     };
 
     await transporter.sendMail(mailOptions);
-    
+
     return res.status(200).json({ message: "link sent successfully" });
   } catch (error) {
     console.log(error);

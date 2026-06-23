@@ -1,5 +1,5 @@
 import { OAuth2Client } from "google-auth-library";
-import { User } from "../models/userModel.js";
+import { User } from "../../models/userModel.js";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import bcrypt from "bcrypt";

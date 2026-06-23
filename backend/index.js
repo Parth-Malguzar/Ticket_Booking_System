@@ -1,10 +1,13 @@
-import express from "express";
 import dotenv from "dotenv";
+dotenv.config();
+import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import { authRoute } from "./routes/authRoute.js";
 import cookieParser from "cookie-parser";
-dotenv.config();
+import { userRoute } from "./routes/userRoute.js";
+import { catRoute } from "./routes/catRoute.js";
+import { vendorRoute } from "./routes/vendorRoute.js";
 const app = express();
 // allow frontend origin and parse JSON bodies
 app.use(
@@ -25,6 +28,10 @@ app.use((req,res,next)=>{//didn't work as of now
    next()
 })
 app.use("/api/auth", authRoute);
+app.use("/api/users", userRoute);
+app.use("/api/vendors", vendorRoute);
+app.use("/api/catalog", catRoute);
+
 
 mongoose
   .connect(process.env.MONGODB_CONNECTION_STRING,{

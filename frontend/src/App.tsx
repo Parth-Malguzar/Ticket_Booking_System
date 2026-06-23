@@ -5,7 +5,6 @@ import ForgotPassword from "./pages/ForgotPassword"
 import ResetPassword from "./pages/ResetPassword"
 import VerifyEmail from "./pages/VerifyEmail"
 import Admin from "./pages/Admin.tsx"
-import Vendor from "./pages/Vendor.tsx"
 import Navbar from "./components/Navbar"
 import { useAuthStore } from "./stores/authStore"
 import api from "./lib/axios.ts"
@@ -14,6 +13,7 @@ import { useEffect } from "react"
 import { useLocation } from "react-router-dom"
 import { Toaster } from "react-hot-toast"
 import UserPage from "./pages/UserPage.tsx"
+import Vendor from "./pages/Vendor.tsx"
 
 const getRoleHomePath = (role?: string) => {
   if (role === "admin") return "/admin"
@@ -62,7 +62,7 @@ function AppRoutes() {
         <Route path="/reset-password/:token" element={user ? <Navigate to={getRoleHomePath(user.role)} replace /> : <ResetPassword />} />
         <Route path="/verify-email/:token" element={<VerifyEmail />} />
         <Route path="/admin" element={user?.role === "admin" ? <Admin /> : user ? <Navigate to={getRoleHomePath(user.role)} replace /> : <Navigate to="/login" replace />} />
-        <Route path="/vendor" element={user?.role === "vendor" ? <Vendor /> : user ? <Navigate to={getRoleHomePath(user.role)} replace /> : <Navigate to="/login" replace />} />
+        <Route path="/vendor" element={user?.role === "vendor" ? <Vendor/> : user ? <Navigate to={getRoleHomePath(user.role)} replace /> : <Navigate to="/login" replace />} />
         <Route
           path="/user"
           element={

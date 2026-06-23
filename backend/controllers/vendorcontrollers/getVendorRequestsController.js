@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { User } from "../models/userModel.js";
+import { User } from "../../models/userModel.js";
 
 const getVendorRequestsController = async (req, res) => {
   try {

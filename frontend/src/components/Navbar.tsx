@@ -63,7 +63,7 @@ const Navbar = () => {
     const { user, logout, setUser } = useAuthStore()
     const { theme, toggleTheme } = useThemeStore();
     const location = useLocation();
-    const activeTab = new URLSearchParams(location.search).get("tab") ?? "dashboard"
+    const activeTab = new URLSearchParams(location.search).get("tab") ?? "dashboard"//object to read query params
     const isLoginPage = location.pathname === "/login";
     const isSignupPage = location.pathname === "/signup";
     const isResetPage = location.pathname.startsWith("/reset-password")

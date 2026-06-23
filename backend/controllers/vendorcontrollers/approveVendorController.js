@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
-import { User } from "../models/userModel.js";
+import { User } from "../../models/userModel.js";
 
-const rejectVendorController = async (req, res) => {
+const approveVendorController = async (req, res) => {
   try {
     const token = req.cookies?.token;
     if (!token) {
@@ -19,11 +19,11 @@ const rejectVendorController = async (req, res) => {
       return res.status(404).json({ message: "Vendor request not found" });
     }
 
-    vendor.vendorStatus = "rejected";
+    vendor.vendorStatus = "approved";
     await vendor.save();
 
     return res.status(200).json({
-      message: "Vendor rejected successfully",
+      message: "Vendor approved successfully",
       vendor: {
         id: vendor._id,
         name: vendor.name,
@@ -33,8 +33,8 @@ const rejectVendorController = async (req, res) => {
       },
     });
   } catch (error) {
-    return res.status(500).json({ message: "Failed to reject vendor" });
+    return res.status(500).json({ message: "Failed to approve vendor" });
   }
 };
 
-export default rejectVendorController;
+export default approveVendorController;
