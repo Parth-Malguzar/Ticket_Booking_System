@@ -1,5 +1,5 @@
 const logoutController = (req, res) => {
-  res.clearCookie("token", {//why only name is not enough
+  res.clearCookie("token", {//why only name is not enough?
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",

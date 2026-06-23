@@ -8,13 +8,14 @@ const googleClient = new OAuth2Client(process.env.OAUTH_CLIENT_ID);
 
 const oauthController = async (req, res) => {
   try {
-    const { token,rememberMe } = req.body;
+    const { token, rememberMe } = req.body;
+    //token given by google itself
     if (!token) {
       return res
         .status(400)
         .json({ message: "Google sign-in token is required." });
     }
-
+    //we will get a ticket from google if token is correct
     const ticket = await googleClient.verifyIdToken({
       idToken: token,
       audience: process.env.OAUTH_CLIENT_ID,
@@ -42,19 +43,38 @@ const oauthController = async (req, res) => {
         email,
         password: hashedPassword,
         role: email === process.env.ADMIN ? "admin" : "user",
+        verified: true,
       });
+    } else if (user.role === "vendor" && user.vendorStatus !== "approved") {
+      return res.status(403).json({
+        message:
+          user.vendorStatus === "rejected"
+            ? "Vendor request was rejected by admin."
+            : "Vendor account is pending approval.",
+      });
+    } else if (!user.verified) {
+      // Google proves email ownership — mark existing account verified.
+      user.verified = true;
+      await user.save();
     }
     const authToken = jwt.sign(
       { userId: user._id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: "7d" },
+      rememberMe ? { expiresIn: "2d" } : {},
     );
-    res.cookie("token",authToken,{
-      httpOnly:true,//frontend js can't access cookies with dom
-      secure:process.env.NODE_ENV==="production",
-      sameSite:"strict",
-      maxAge:24*60*60*1000//ms equivalent to a day
-    })
+    const cookieOptions = {
+      httpOnly: true, //frontend js can't access cookies with dom
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+    };
+
+    if (rememberMe) {
+      cookieOptions.maxAge = 2 * 24 * 60 * 60 * 1000;
+    }
+
+    res.cookie("token", authToken, cookieOptions);
+
     return res.status(200).json({
       message: "Signed in with Google successfully.",
       user: {
@@ -62,8 +82,7 @@ const oauthController = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        balance:user.balance
-
+        balance: user.balance,
       },
     });
   } catch (error) {

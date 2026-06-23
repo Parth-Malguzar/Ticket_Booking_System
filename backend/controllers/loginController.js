@@ -20,6 +20,19 @@ const loginController = async (req, res) => {
         message: "Incorrect email or password.",
       });
     }
+    if (!user.verified) {
+      return res.status(403).json({
+        message: "Please verify your email before logging in.",
+      });
+    }
+    if (user.role === "vendor" && user.vendorStatus !== "approved") {
+      return res.status(403).json({
+        message:
+          user.vendorStatus === "rejected"
+            ? "Vendor request was rejected by admin."
+            : "Vendor account is pending approval.",
+      });
+    }
     const jwtOptions = rememberMe ? { expiresIn: "2d" } : {};
     const authToken = jwt.sign(
       {
@@ -34,14 +47,15 @@ const loginController = async (req, res) => {
     const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",//didn't understand
+      sameSite: "lax",//we can't use strict here because we are opening our website from external links sent in emails for auth for that lax is best
+      
+      path: "/", //With path: "/", the auth cookie is available everywhere in the backend as long as the request matches the domain/origin rules.
     };
 
     if (rememberMe) {
       cookieOptions.maxAge = 2 * 24 * 60 * 60 * 1000;
     }
-
+    //making cookie //name content security
     res.cookie("token", authToken, cookieOptions);
 
     return res.status(200).json({
@@ -52,7 +66,8 @@ const loginController = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        balance:user.balance
+        balance: user.balance,
+        vendorStatus: user.vendorStatus,
       },
     });
   } catch (error) {

@@ -5,17 +5,26 @@ import signupController from "../controllers/signupController.js";
 import forgotController from "../controllers/forgotController.js";
 import resetController from "../controllers/resetController.js";
 import verifyToken from "../controllers/verifyToken.js";
+import verifyEmailController from "../controllers/verifyEmailController.js";
 import logoutController from "../controllers/logoutController.js";
 import meController from "../controllers/meController.js";
 import deleteController from "../controllers/deleteController.js";
-const router=Router()
-router.post("/google",oauthController)
-router.post("/login",loginController)
-router.post("/signup",signupController)
-router.post("/forgot-password",forgotController)
-router.post("/reset-password",resetController)
-router.get("/verify-reset-token/:token",verifyToken)
-router.get("/me",meController)
-router.post("/logout",logoutController)
-router.delete("/delete",deleteController)
-export {router as authRoute}
+import getVendorRequestsController from "../controllers/getVendorRequestsController.js";
+import approveVendorController from "../controllers/approveVendorController.js";
+import rejectVendorController from "../controllers/rejectVendorController.js";
+const router = Router();
+router.post("/google", oauthController);
+router.post("/login", loginController);
+router.post("/signup", signupController);
+router.get("/verify-email/:token", verifyEmailController);
+router.post("/verify-email", verifyEmailController);
+router.post("/forgot-password", forgotController);
+router.post("/reset-password", resetController);
+router.get("/verify-reset-token/:token", verifyToken);
+router.get("/me", meController);
+router.post("/logout", logoutController);
+router.delete("/delete", deleteController);
+router.get("/vendor-requests", getVendorRequestsController);
+router.patch("/vendor-requests/:id/approve", approveVendorController);
+router.patch("/vendor-requests/:id/reject", rejectVendorController);
+export { router as authRoute };

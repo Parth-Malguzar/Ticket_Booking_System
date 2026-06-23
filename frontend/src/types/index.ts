@@ -3,5 +3,6 @@ export interface User{
     name:string,
     email:string,
     role:"user"|"admin"|"vendor",
-    balance:number
+    balance:number,
+    vendorStatus?: "none" | "pending" | "approved" | "rejected"
 }

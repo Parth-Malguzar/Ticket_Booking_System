@@ -19,11 +19,20 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "admin", "vendor"],
       default: "user",
     },
-    balance:{
-      type:Number,
-      default:function(){
-        return this.role==="user"?1000:0; //for using this make a function(not an arrow function)
-      }
+    vendorStatus: {
+      type: String,
+      enum: ["none", "pending", "approved", "rejected"],
+      default: "none",
+    },
+    verified: {
+      type: Boolean,
+      default: false,
+    },
+    balance: {
+      type: Number,
+      default: function () {
+        return this.role === "user" ? 1000 : 0; //for using this make a function(not an arrow function)
+      },
     },
     bookings: {
       type: [mongoose.Schema.Types.ObjectId],

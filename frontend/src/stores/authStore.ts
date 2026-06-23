@@ -10,19 +10,13 @@ interface AuthStore {
 }
 
 export const useAuthStore = create<AuthStore>((set) => ({
-  user: JSON.parse(localStorage.getItem("user") || "null"),
+  user: null,
 
   login: (user) => {
-    localStorage.setItem("user", JSON.stringify(user));
     set({ user });
   },
 
   setUser: (user) => {
-    if (user) {
-      localStorage.setItem("user", JSON.stringify(user));
-    } else {
-      localStorage.removeItem("user");
-    }
     set({ user });
   },
 
@@ -33,7 +27,6 @@ export const useAuthStore = create<AuthStore>((set) => ({
       // ignore network/server errors but ensure client state cleared
       console.warn("Logout request failed", err);
     } finally {
-      localStorage.removeItem("user");
       set({ user: null });
     }
   },

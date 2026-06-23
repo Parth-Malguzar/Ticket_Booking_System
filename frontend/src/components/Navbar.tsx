@@ -22,19 +22,40 @@ const MoonIcon = () => (
 
 const roleNavItems = {
     user: [
-        { label: "Movies", to: "/movies" },
-        { label: "Concert", to: "/concert" },
-        { label: "Train", to: "/train" },
+        {
+            label: "Dashboard",
+            to: "/user?tab=dashboard",
+            tab: "dashboard"
+        },
+        {
+            label: "Movies",
+            to: "/user?tab=movies",
+            tab: "movies"
+        },
+        {
+            label: "Concert",
+            to: "/user?tab=concert",
+            tab: "concert"
+        },
+        {
+            label: "Train",
+            to: "/user?tab=train",
+            tab: "train"
+        },
     ],
     admin: [
-        { label: "Dashboard", to: "/admin" },
-        { label: "Movies", to: "/movies" },
-        { label: "Vendor", to: "/vendor" },
+        { label: "Dashboard", to: "/admin?tab=dashboard", tab: "dashboard" },
+        { label: "User", to: "/admin?tab=user", tab: "user" },
+        { label: "Vendor", to: "/admin?tab=vendor", tab: "vendor" },
+        { label: "Movies", to: "/admin?tab=movies", tab: "movies" },
+        { label: "Train", to: "/admin?tab=train", tab: "train" },
+        { label: "Concert", to: "/admin?tab=concert", tab: "concert" },
     ],
     vendor: [
-        { label: "Dashboard", to: "/vendor" },
-        { label: "Movies", to: "/movies" },
-        { label: "Train", to: "/train" },
+        { label: "Dashboard", to: "/vendor?tab=dashboard", tab: "dashboard" },
+        { label: "Movies", to: "/vendor?tab=movies", tab: "movies" },
+        { label: "Train", to: "/vendor?tab=train", tab: "train" },
+        { label: "Concert", to: "/vendor?tab=concert", tab: "concert" },
     ],
 } as const
 
@@ -42,9 +63,11 @@ const Navbar = () => {
     const { user, logout, setUser } = useAuthStore()
     const { theme, toggleTheme } = useThemeStore();
     const location = useLocation();
+    const activeTab = new URLSearchParams(location.search).get("tab") ?? "dashboard"
     const isLoginPage = location.pathname === "/login";
     const isSignupPage = location.pathname === "/signup";
     const isResetPage = location.pathname.startsWith("/reset-password")
+    const isVerifyEmailPage = location.pathname.startsWith("/verify-email/")
 
     const [open, setOpen] = useState(false)
     const [delPopup, setDelPopup] = useState(false)
@@ -54,6 +77,7 @@ const Navbar = () => {
 
     const dropdownRef = useRef<HTMLDivElement>(null)
     const delPopupRef = useRef<HTMLDivElement>(null)
+
     useEffect(() => {
 
         const handleClickOutside = (
@@ -90,6 +114,10 @@ const Navbar = () => {
         }
 
     }, [delPopup, open])
+
+    if (isVerifyEmailPage) {
+        return null
+    }
 
     const handleDelete = async () => {
         if (!password.trim()) {
@@ -185,11 +213,11 @@ const Navbar = () => {
                                                     </p>
                                                 </div>
 
-                                               {user.role!=="admin" && (
-                                                 <button className="w-full rounded-xl px-3 py-2 text-left text-sm text-(--app-fg) transition-colors hover:bg-(--app-surface-2)">
-                                                    Balance : ${user.balance}
-                                                </button>
-                                               )}
+                                                {user.role !== "admin" && (
+                                                    <button className="w-full rounded-xl px-3 py-2 text-left text-sm text-(--app-fg) transition-colors hover:bg-(--app-surface-2)">
+                                                        Balance : ${user.balance}
+                                                    </button>
+                                                )}
 
                                                 <button className="w-full rounded-xl px-3 py-2 text-left text-sm text-(--app-fg) transition-colors hover:bg-(--app-surface-2)">
                                                     Bookings
@@ -224,15 +252,26 @@ const Navbar = () => {
                 <nav className="border-b border-(--app-border) bg-(--app-surface) text-(--app-fg) shadow-[0_1px_0_rgba(255,255,255,0.04)]">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex h-14 flex-wrap items-center justify-center gap-3 sm:justify-start">
-                            {(roleNavItems[user.role] ?? roleNavItems.user).map((item) => (
-                                <Link
-                                    key={item.to}
-                                    to={item.to}
-                                    className="rounded-full border border-(--app-border) bg-(--app-surface-2) px-4 py-2 text-sm font-medium text-(--app-fg) transition-all hover:border-(--app-accent) hover:bg-(--app-accent) hover:text-(--app-accent-fg) active:scale-[0.98]"
-                                >
-                                    {item.label}
-                                </Link>
-                            ))}
+                            {roleNavItems[
+                                user.role as keyof typeof roleNavItems
+                            ].map((item) => {
+
+                                const isActive =
+                                    activeTab === item.tab
+
+                                return (
+                                    <Link
+                                        key={item.to}
+                                        to={item.to}
+                                        className={`rounded-full border px-4 py-2 text-sm font-medium transition-all active:scale-[0.98] ${isActive
+                                            ? "border-(--app-accent) bg-(--app-accent) text-(--app-accent-fg)"
+                                            : "border-(--app-border) bg-(--app-surface-2) text-(--app-fg) hover:border-(--app-accent) hover:bg-(--app-accent) hover:text-(--app-accent-fg)"
+                                            }`}
+                                    >
+                                        {item.label}
+                                    </Link>
+                                )
+                            })}
                         </div>
                     </div>
                 </nav>

@@ -13,7 +13,9 @@ const forgotController = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "5m" },
     );
+    //change this link url if deploying
     const resetLink = `http://localhost:5173/reset-password/${encodeURIComponent(resetToken)}`;
+
     let transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -30,6 +32,7 @@ const forgotController = async (req, res) => {
     };
 
     await transporter.sendMail(mailOptions);
+    
     return res.status(200).json({ message: "link sent successfully" });
   } catch (error) {
     console.log(error);
