@@ -240,7 +240,7 @@ const Vendor = () => {
                     <h2 className="mt-3 text-2xl font-semibold">{meta.title}</h2>
                     <p className="mt-2 text-sm text-(--app-muted)">{meta.description}</p>
 
-                    <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                    <div className="mt-6 grid gap-1 sm:grid-cols-2">
                         <label className="space-y-2">
                             <span className="text-sm text-(--app-muted)">Title</span>
                             <input

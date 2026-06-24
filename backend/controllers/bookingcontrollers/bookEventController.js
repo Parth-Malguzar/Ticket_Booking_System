@@ -5,18 +5,10 @@ import { CatalogItem } from "../../models/catalogItemModel.js";
 
 export const bookEventController = async (req, res) => {
   try {
-    const token = req.cookies?.token;
-    if (!token) {
-      return res.status(401).json({ message: "Not authenticated" });
-    }
+   
+    const actor = await req.user;
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const actor = await User.findById(decoded.userId);
-    if (!actor) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    const { itemId, date, time, seats } = req.body;
+    const { itemId, date, time, seats, source, destination } = req.body;
     if (!itemId || !date || !time || !seats) {
       return res.status(400).json({ message: "Missing required booking details" });
     }
@@ -48,6 +40,8 @@ export const bookEventController = async (req, res) => {
       date,
       time,
       totalAmount,
+      source: item.category === "train" ? source : undefined,
+      destination: item.category === "train" ? destination : undefined,
     });
 
     return res.status(201).json({

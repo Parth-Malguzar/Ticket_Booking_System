@@ -151,136 +151,148 @@ const Navbar = () => {
             setIsDeleting(false)
         }
     }
+    const renderControls = () => (
+        <>
+            <button
+                type="button"
+                onClick={toggleTheme}
+                className="inline-flex items-center justify-center rounded-full border border-(--app-border) bg-(--app-surface-2) p-2 text-(--app-fg) transition-all hover:border-(--app-accent) hover:bg-(--app-accent) hover:text-(--app-accent-fg) active:scale-[0.98]"
+                aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
+                title={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
+            >
+                {theme === "dark" ? <SunIcon /> : <MoonIcon />}
+            </button>
+
+            {!user ? (
+                <>
+                    {!isLoginPage && !isResetPage && (
+                        <Link
+                            to="/login"
+                            className="rounded-full border border-(--app-border) bg-(--app-surface-2) px-4 py-2 text-sm font-medium text-(--app-fg) transition-all hover:border-(--app-accent) hover:bg-(--app-accent) hover:text-(--app-accent-fg) active:scale-[0.98]"
+                        >
+                            Login
+                        </Link>
+                    )}
+
+                    {!isSignupPage && !isResetPage && (
+                        <Link
+                            to="/signup"
+                            className="rounded-full bg-(--app-accent) px-4 py-2 text-sm font-medium text-(--app-accent-fg) transition-all hover:bg-(--app-accent-hover) active:scale-[0.98]"
+                        >
+                            Sign Up
+                        </Link>
+                    )}
+                </>
+            ) : (
+                <div className="flex items-center gap-5">
+                    <div className="relative" ref={dropdownRef}>
+                        <button
+                            type="button"
+                            onClick={() => setOpen(!open)}
+                            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-(--app-border) bg-(--app-surface-2) text-(--app-fg) transition-all hover:border-(--app-accent) hover:bg-(--app-accent) hover:text-(--app-accent-fg) active:scale-[0.98]"
+                            aria-label="Open account menu"
+                        >
+                            <User size={18} />
+                        </button>
+                        {open && (
+                            <div className="absolute right-0 top-12 w-fit overflow-hidden rounded-2xl border border-(--app-border) bg-(--app-surface) p-2 shadow-2xl shadow-black/30 z-50">
+                                <div className="px-3 pb-2 pt-1 text-xs tracking-[0.25em] text-(--app-muted)">
+                                    <p className="text-xs uppercase tracking-[0.25em] text-(--app-muted)">
+                                        Account
+                                    </p>
+
+                                    <p className="mt-1 text-sm text-(--app-fg)">
+                                        {user.email}
+                                    </p>
+                                </div>
+
+                                {user.role !== "admin" && (
+                                    <button className="w-full rounded-xl px-3 py-2 text-left text-sm text-(--app-fg) transition-colors hover:bg-(--app-surface-2)">
+                                        Balance : ${user.balance}
+                                    </button>
+                                )}
+
+                                <Link
+                                    to="/user?tab=dashboard"
+                                    onClick={() => setOpen(false)}
+                                    className="block w-full rounded-xl px-3 py-2 text-left text-sm text-(--app-fg) transition-colors hover:bg-(--app-surface-2)"
+                                >
+                                    Bookings
+                                </Link>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setOpen(false)
+                                        logout()
+                                    }}
+                                    className="mt-1 w-full rounded-xl px-3 py-2 text-left text-sm text-(--app-fg) transition-colors hover:bg-(--app-surface-2)"
+                                >
+                                    Logout
+                                </button>
+
+                                <button onClick={() => { setOpen(false); setDelPopup(true); }} className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-red-500 transition-colors hover:bg-red-500/10 hover:text-red-400">
+                                    <span>Delete Account</span>
+                                    <Trash2 className="h-4 w-4" />
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+        </>
+    )
 
     return (
         <>
-            <nav className="border-b border-(--app-border) bg-(--app-surface) text-(--app-fg) shadow-[0_1px_0_rgba(255,255,255,0.04)]">
+            <nav className="border-b border-(--app-border) bg-(--app-surface) text-(--app-fg) shadow-[0_1px_0_rgba(255,255,255,0.04)] sticky top-0 z-40 backdrop-blur-md bg-opacity-95">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-16">
-                        <div className="flex items-center gap-3">
-                            <img width={30} src="/favicon.svg" alt="" />
-                            <Link to="/" className="text-2xl font-semibold tracking-tight text-(--app-fg)">
-                                BookMyTicket
-                            </Link>
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between py-3 md:h-16 gap-3">
+                        {/* Top row / Left on desktop */}
+                        <div className="flex items-center justify-between w-full md:w-auto">
+                            <div className="flex items-center gap-3">
+                                <img width={30} src="/favicon.svg" alt="" />
+                                <Link to="/" className="text-2xl font-semibold tracking-tight text-(--app-fg)">
+                                    BookMyTicket
+                                </Link>
+                            </div>
+
+                            {/* Mobile controls */}
+                            <div className="flex items-center gap-3 md:hidden">
+                                {renderControls()}
+                            </div>
                         </div>
 
-                        <div className="flex items-center gap-4">
-                            <button
-                                type="button"
-                                onClick={toggleTheme}
-                                className="inline-flex items-center justify-center rounded-full border border-(--app-border) bg-(--app-surface-2) p-2 text-(--app-fg) transition-all hover:border-(--app-accent) hover:bg-(--app-accent) hover:text-(--app-accent-fg) active:scale-[0.98]"
-                                aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
-                                title={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
-                            >
-                                {theme === "dark" ? <SunIcon /> : <MoonIcon />}
-                            </button>
-
-                            {!user ? (
-                                <>
-                                    {!isLoginPage && !isResetPage && (
+                        {/* Navigation Links */}
+                        {user && (user.role !== "vendor" || user.vendorStatus === "approved") && (
+                            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 md:py-0 justify-start md:justify-center">
+                                {roleNavItems[
+                                    user.role as keyof typeof roleNavItems
+                                ].map((item) => {
+                                    const isActive = activeTab === item.tab
+                                    return (
                                         <Link
-                                            to="/login"
-                                            className="rounded-full border border-(--app-border) bg-(--app-surface-2) px-4 py-2 text-sm font-medium text-(--app-fg) transition-all hover:border-(--app-accent) hover:bg-(--app-accent) hover:text-(--app-accent-fg) active:scale-[0.98]"
+                                            key={item.to}
+                                            to={item.to}
+                                            className={`rounded-full px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wider transition-all active:scale-[0.98] ${
+                                                isActive
+                                                    ? "bg-(--app-accent) text-(--app-accent-fg)"
+                                                    : "text-(--app-muted) hover:bg-(--app-surface-2) hover:text-(--app-fg)"
+                                            }`}
                                         >
-                                            Login
+                                            {item.label}
                                         </Link>
-                                    )}
+                                    )
+                                })}
+                            </div>
+                        )}
 
-                                    {!isSignupPage && !isResetPage && (
-                                        <Link
-                                            to="/signup"
-                                            className="rounded-full bg-(--app-accent) px-4 py-2 text-sm font-medium text-(--app-accent-fg) transition-all hover:bg-(--app-accent-hover) active:scale-[0.98]"
-                                        >
-                                            Sign Up
-                                        </Link>
-                                    )}
-                                </>
-                            ) : (
-                                <div className="flex items-center gap-5">
-                                    <div className="relative" ref={dropdownRef}>
-                                        <button
-                                            type="button"
-                                            onClick={() => setOpen(!open)}
-                                            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-(--app-border) bg-(--app-surface-2) text-(--app-fg) transition-all hover:border-(--app-accent) hover:bg-(--app-accent) hover:text-(--app-accent-fg) active:scale-[0.98]"
-                                            aria-label="Open account menu"
-                                        >
-                                            <User size={18} />
-                                        </button>
-                                        {open && (
-                                            <div className="absolute right-0 top-12 w-fit overflow-hidden rounded-2xl border border-(--app-border) bg-(--app-surface) p-2 shadow-2xl shadow-black/30">
-                                                <div className="px-3 pb-2 pt-1 text-xs tracking-[0.25em] text-(--app-muted)">
-                                                    <p className="text-xs uppercase tracking-[0.25em] text-(--app-muted)">
-                                                        Account
-                                                    </p>
-
-                                                    <p className="mt-1 text-sm text-(--app-fg)">
-                                                        {user.email}
-                                                    </p>
-                                                </div>
-
-                                                {user.role !== "admin" && (
-                                                    <button className="w-full rounded-xl px-3 py-2 text-left text-sm text-(--app-fg) transition-colors hover:bg-(--app-surface-2)">
-                                                        Balance : ${user.balance}
-                                                    </button>
-                                                )}
-
-                                                <button className="w-full rounded-xl px-3 py-2 text-left text-sm text-(--app-fg) transition-colors hover:bg-(--app-surface-2)">
-                                                    Bookings
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setOpen(false)
-                                                        logout()
-                                                    }}
-                                                    className="mt-1 w-full rounded-xl px-3 py-2 text-left text-sm text-(--app-fg) transition-colors hover:bg-(--app-surface-2)"
-                                                >
-                                                    Logout
-                                                </button>
-
-                                                <button onClick={() => setDelPopup(true)} className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-red-500 transition-colors hover:bg-red-500/10 hover:text-red-400">
-                                                    <span>Delete Account</span>
-                                                    <Trash2 className="h-4 w-4" />
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-
+                        {/* Desktop controls */}
+                        <div className="hidden md:flex items-center gap-4">
+                            {renderControls()}
                         </div>
                     </div>
                 </div>
             </nav>
-
-            {user && (user.role !== "vendor" || user.vendorStatus === "approved") && (
-                <nav className="border-b border-(--app-border) bg-(--app-surface) text-(--app-fg) shadow-[0_1px_0_rgba(255,255,255,0.04)]">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="flex h-14 flex-wrap items-center justify-center gap-3 sm:justify-start">
-                            {roleNavItems[
-                                user.role as keyof typeof roleNavItems
-                            ].map((item) => {
-
-                                const isActive =
-                                    activeTab === item.tab
-
-                                return (
-                                    <Link
-                                        key={item.to}
-                                        to={item.to}
-                                        className={`rounded-full border px-4 py-2 text-sm font-medium transition-all active:scale-[0.98] ${isActive
-                                            ? "border-(--app-accent) bg-(--app-accent) text-(--app-accent-fg)"
-                                            : "border-(--app-border) bg-(--app-surface-2) text-(--app-fg) hover:border-(--app-accent) hover:bg-(--app-accent) hover:text-(--app-accent-fg)"
-                                            }`}
-                                    >
-                                        {item.label}
-                                    </Link>
-                                )
-                            })}
-                        </div>
-                    </div>
-                </nav>
-            )}
 
             {delPopup && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm">

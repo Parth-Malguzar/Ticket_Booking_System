@@ -3,16 +3,6 @@ import { User } from "../../models/userModel.js";
 
 const getUsersController = async (req, res) => {
   try {
-    const token = req.cookies?.token;
-    if (!token) {
-      return res.status(401).json({ message: "Not authenticated" });
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (decoded.role !== "admin") {
-      return res.status(403).json({ message: "Admin access required" });
-    }
-
     const { role } = req.query;
     const filter = {};
 

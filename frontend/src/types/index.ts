@@ -27,3 +27,21 @@ export interface CatalogItem extends CatalogEvent {
     requestRemoval?: boolean,
     createdAt?: string
 }
+export interface UserBooking {
+    id: string;
+    userId: string;
+    itemId: string;
+    title: string;
+    image: string;
+    category: "movies" | "train" | "concert";
+    date: string;
+    time: string;
+    seats: number;
+    venue: string;
+    price: number;
+    totalAmount: number;
+    source?: string;
+    destination?: string;
+    status: "pending" | "confirmed" | "cancelled";
+    createdAt: string;
+}

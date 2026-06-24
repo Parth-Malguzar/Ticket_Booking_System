@@ -4,12 +4,13 @@ import approveVendorController from "../controllers/vendorcontrollers/approveVen
 import rejectVendorController from "../controllers/vendorcontrollers/rejectVendorController.js";
 import statsVendorController from "../controllers/statscontrollers/statsVendorController.js";
 
+import { protectRoute, requireRole } from "../middlewares/authMiddleware.js";
+
 const router = Router()
 
-router.get("/", getVendorRequestsController);
-router.get("/stats", statsVendorController);
-router.patch("/:id/approve", approveVendorController);
-router.patch("/:id/reject", rejectVendorController);
-
+router.get("/", protectRoute, requireRole("admin"), getVendorRequestsController);
+router.get("/stats", protectRoute, requireRole("vendor"), statsVendorController);
+router.patch("/:id/approve", protectRoute, requireRole("admin"), approveVendorController);
+router.patch("/:id/reject", protectRoute, requireRole("admin"), rejectVendorController);
 
 export { router as vendorRoute };

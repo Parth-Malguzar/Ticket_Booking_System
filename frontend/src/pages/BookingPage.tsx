@@ -4,11 +4,14 @@ import api from "@/lib/axios"
 import axios from "axios"
 import toast from "react-hot-toast"
 import type { CatalogItem } from "../types"
+import { Input } from "../components/Input"
 
 const initialForm = {
     date: "",
     time: "",
     seats: 1,
+    source: "",
+    destination: "",
 }
 
 const BookingPage = () => {
@@ -43,6 +46,8 @@ const BookingPage = () => {
                 date: form.date,
                 time: form.time,
                 seats: form.seats,
+                source: item?.category === "train" ? form.source : undefined,
+                destination: item?.category === "train" ? form.destination : undefined,
             })
             toast.success("Ticket booked successfully!")
             navigate("/user")
@@ -170,55 +175,66 @@ const BookingPage = () => {
                                 </p>
 
                                 <div className="mt-6 space-y-4">
-                                    <label className="block space-y-2">
-                                        <span className="text-xs font-semibold uppercase tracking-wider text-(--app-muted)">
-                                            Select Date
-                                        </span>
-                                        <input
-                                            type="date"
-                                            value={form.date}
-                                            onChange={(e) =>
-                                                handleChange("date", e.target.value)
-                                            }
-                                            required
-                                            className="w-full rounded-xl border border-(--app-border) bg-(--app-surface) px-4 py-3 text-sm text-(--app-fg) outline-none transition-all focus:border-(--app-accent) focus:ring-1 focus:ring-(--app-accent)"
-                                        />
-                                    </label>
+                                    <Input
+                                        label="Select Date"
+                                        type="date"
+                                        value={form.date}
+                                        onChange={(e) =>
+                                            handleChange("date", e.target.value)
+                                        }
+                                        required
+                                    />
 
-                                    <label className="block space-y-2">
-                                        <span className="text-xs font-semibold uppercase tracking-wider text-(--app-muted)">
-                                            Select Time
-                                        </span>
-                                        <input
-                                            type="time"
-                                            value={form.time}
-                                            onChange={(e) =>
-                                                handleChange("time", e.target.value)
-                                            }
-                                            required
-                                            className="w-full rounded-xl border border-(--app-border) bg-(--app-surface) px-4 py-3 text-sm text-(--app-fg) outline-none transition-all focus:border-(--app-accent) focus:ring-1 focus:ring-(--app-accent)"
-                                        />
-                                    </label>
+                                    <Input
+                                        label="Select Time"
+                                        type="time"
+                                        value={form.time}
+                                        onChange={(e) =>
+                                            handleChange("time", e.target.value)
+                                        }
+                                        required
+                                    />
 
-                                    <label className="block space-y-2">
-                                        <span className="text-xs font-semibold uppercase tracking-wider text-(--app-muted)">
-                                            Number of Seats
-                                        </span>
-                                        <input
-                                            type="number"
-                                            min={1}
-                                            max={item.availableSeats}
-                                            value={form.seats}
-                                            onChange={(e) =>
-                                                handleChange(
-                                                    "seats",
-                                                    Number(e.target.value)
-                                                )
-                                            }
-                                            required
-                                            className="w-full rounded-xl border border-(--app-border) bg-(--app-surface) px-4 py-3 text-sm text-(--app-fg) outline-none transition-all focus:border-(--app-accent) focus:ring-1 focus:ring-(--app-accent)"
-                                        />
-                                    </label>
+                                    {item.category === "train" && (
+                                        <>
+                                            <Input
+                                                label="Source"
+                                                type="text"
+                                                value={form.source}
+                                                onChange={(e) =>
+                                                    handleChange("source", e.target.value)
+                                                }
+                                                required
+                                                placeholder="Departure station"
+                                            />
+
+                                            <Input
+                                                label="Destination"
+                                                type="text"
+                                                value={form.destination}
+                                                onChange={(e) =>
+                                                    handleChange("destination", e.target.value)
+                                                }
+                                                required
+                                                placeholder="Arrival station"
+                                            />
+                                        </>
+                                    )}
+
+                                    <Input
+                                        label="Number of Seats"
+                                        type="number"
+                                        min={1}
+                                        max={item.availableSeats}
+                                        value={form.seats}
+                                        onChange={(e) =>
+                                            handleChange(
+                                                "seats",
+                                                Number(e.target.value)
+                                            )
+                                        }
+                                        required
+                                    />
                                 </div>
                             </div>
 

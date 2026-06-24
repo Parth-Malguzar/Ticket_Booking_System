@@ -3,17 +3,7 @@ import { CatalogItem } from "../../models/catalogItemModel.js";
 
 const statsVendorController = async (req, res) => {
   try {
-    const token = req.cookies?.token;
-    if (!token) {
-      return res.status(401).json({ message: "Not authenticated" });
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (decoded.role !== "vendor") {
-      return res.status(403).json({ message: "Vendor access required" });
-    }
-
-    const vendorId = decoded.userId;
+    const vendorId = req.user._id;
 
     const totalMovies = await CatalogItem.countDocuments({
       createdBy: vendorId,

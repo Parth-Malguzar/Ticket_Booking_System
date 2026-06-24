@@ -2,6 +2,7 @@ import { useLocation } from "react-router-dom"
 import Movies from "./Movies"
 import Concert from "./Concert"
 import Train from "./Train"
+import UserBookings from "./UserBookings"
 
 const UserPage = () => {
 
@@ -15,9 +16,7 @@ const UserPage = () => {
 
    return (
       <>
-         {tab === "dashboard" && (
-            <div>Bookings</div>
-         )}
+         {tab === "dashboard" && <UserBookings />}
 
          {tab === "movies" && <Movies />}
 

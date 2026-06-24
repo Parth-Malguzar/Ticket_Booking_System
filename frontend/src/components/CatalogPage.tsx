@@ -65,7 +65,7 @@ const CatalogPage = ({ category, eyebrow, title, description }: CatalogPageProps
                 ) : (
                     <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                         {items.map((item) => (
-                            <article key={item.id} className="overflow-hidden rounded-3xl border border-(--app-border) bg-(--app-surface-2) shadow-lg shadow-black/20 transition-transform duration-200 hover:-translate-y-1">
+                            <article key={item.id} className="overflow-hidden rounded-3xl border border-(--app-border) bg-(--app-surface-2) shadow-lg shadow-black/20">
                                 <div className="relative h-56 overflow-hidden">
                                     <img src={item.image} alt={item.title} className="h-full w-full object-cover" />
                                 </div>
