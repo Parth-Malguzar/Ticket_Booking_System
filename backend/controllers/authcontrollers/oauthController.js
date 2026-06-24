@@ -44,15 +44,8 @@ const oauthController = async (req, res) => {
         password: hashedPassword,
         role: email === process.env.ADMIN ? "admin" : "user",
         verified: true,
-      });
-    } else if (user.role === "vendor" && user.vendorStatus !== "approved") {
-      return res.status(403).json({
-        message:
-          user.vendorStatus === "rejected"
-            ? "Vendor request was rejected by admin."
-            : "Vendor account is pending approval.",
-      });
-    } else if (!user.verified) {
+      })
+     } else if (!user.verified) {
       // Google proves email ownership — mark existing account verified.
       user.verified = true;
       await user.save();
@@ -83,6 +76,7 @@ const oauthController = async (req, res) => {
         email: user.email,
         role: user.role,
         balance: user.balance,
+        vendorStatus: user.vendorStatus,
       },
     });
   } catch (error) {

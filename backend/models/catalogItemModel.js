@@ -18,16 +18,6 @@ const catalogItemSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    date: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    time: {
-      type: String,
-      required: true,
-      trim: true,
-    },
     venue: {
       type: String,
       required: true,
@@ -38,10 +28,9 @@ const catalogItemSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    tag: {
-      type: String,
-      required: true,
-      trim: true,
+    availableSeats:{
+      type:Number,
+      required:true,
     },
     details: {
       type: [String],

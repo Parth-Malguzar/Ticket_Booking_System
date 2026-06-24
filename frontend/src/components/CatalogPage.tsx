@@ -2,9 +2,9 @@ import { useEffect, useState } from "react"
 import api from "../lib/axios"
 import axios from "axios"
 import toast from "react-hot-toast"
-import { CalendarDays, Clock3, MapPin, Ticket } from "lucide-react"
+import { MapPin, Ticket } from "lucide-react"
 import type { CatalogEvent } from "../types"
-
+import { useNavigate } from "react-router-dom"
 type CatalogPageProps = {
     category: "movies" | "train" | "concert"
     eyebrow: string
@@ -13,6 +13,7 @@ type CatalogPageProps = {
 }
 
 const CatalogPage = ({ category, eyebrow, title, description }: CatalogPageProps) => {
+    const navigate = useNavigate()
     const [items, setItems] = useState<CatalogEvent[]>([])
     const [isLoading, setIsLoading] = useState(true)
 
@@ -45,6 +46,9 @@ const CatalogPage = ({ category, eyebrow, title, description }: CatalogPageProps
         }
     }, [category, title])
 
+    const handleBookNow = (item: CatalogEvent) => {
+        navigate(`/book/${item.id}`)
+    }
     return (
         <div className="min-h-[calc(100vh-8rem)] bg-(--app-bg) px-4 py-10 text-(--app-fg)">
             <div className="mx-auto flex max-w-6xl flex-col gap-6 rounded-3xl border border-(--app-border) bg-(--app-surface) p-8 shadow-2xl shadow-black/30 sm:p-10">
@@ -64,27 +68,14 @@ const CatalogPage = ({ category, eyebrow, title, description }: CatalogPageProps
                             <article key={item.id} className="overflow-hidden rounded-3xl border border-(--app-border) bg-(--app-surface-2) shadow-lg shadow-black/20 transition-transform duration-200 hover:-translate-y-1">
                                 <div className="relative h-56 overflow-hidden">
                                     <img src={item.image} alt={item.title} className="h-full w-full object-cover" />
-                                    <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
-                                    <div className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-black">
-                                        {item.tag}
-                                    </div>
                                 </div>
 
                                 <div className="space-y-4 p-5">
                                     <div>
                                         <h2 className="text-xl font-semibold">{item.title}</h2>
-                                        <p className="mt-1 text-sm text-(--app-muted)">{item.venue}</p>
                                     </div>
 
                                     <div className="grid gap-3 text-sm text-(--app-muted)">
-                                        <div className="flex items-center gap-2">
-                                            <CalendarDays className="h-4 w-4" />
-                                            <span>{item.date}</span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <Clock3 className="h-4 w-4" />
-                                            <span>{item.time}</span>
-                                        </div>
                                         <div className="flex items-center gap-2">
                                             <MapPin className="h-4 w-4" />
                                             <span>{item.venue}</span>
@@ -102,10 +93,10 @@ const CatalogPage = ({ category, eyebrow, title, description }: CatalogPageProps
                                     <div className="flex items-center justify-between gap-3 border-t border-(--app-border) pt-4">
                                         <div>
                                             <p className="text-xs uppercase tracking-[0.25em] text-(--app-muted)">Starting at</p>
-                                            <p className="mt-1 text-2xl font-semibold">{item.price}</p>
+                                            <p className="mt-1 text-2xl font-semibold">$ {item.price}</p>
                                         </div>
 
-                                        <button type="button" className="inline-flex items-center gap-2 rounded-full bg-(--app-accent) px-4 py-2 text-sm font-semibold text-(--app-accent-fg) hover:bg-(--app-accent-hover)">
+                                        <button onClick={() => handleBookNow(item)} type="button" className="inline-flex items-center gap-2 rounded-full bg-(--app-accent) px-4 py-2 text-sm font-semibold text-(--app-accent-fg) hover:bg-(--app-accent-hover)">
                                             <Ticket className="h-4 w-4" />
                                             Book now
                                         </button>

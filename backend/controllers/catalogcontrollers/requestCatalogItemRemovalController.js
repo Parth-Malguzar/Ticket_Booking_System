@@ -20,7 +20,7 @@ const requestCatalogItemRemovalController = async (req, res) => {
     }
 
     const { id } = req.params;
-    const item = await CatalogItem.findById(id);
+    let item = await CatalogItem.findById(id);
 
     if (!item) {
       return res.status(404).json({ message: "Listing not found" });
@@ -30,8 +30,11 @@ const requestCatalogItemRemovalController = async (req, res) => {
       return res.status(403).json({ message: "You can only request removal of your own listings" });
     }
 
-    item.requestRemoval = true;
-    await item.save();
+    item = await CatalogItem.findByIdAndUpdate(
+      id,
+      { requestRemoval: true },
+      { new: true }
+    );
 
     return res.status(200).json({
       message: "Removal requested successfully",
@@ -43,6 +46,7 @@ const requestCatalogItemRemovalController = async (req, res) => {
       },
     });
   } catch (error) {
+    console.error("Removal request error:", error);
     return res.status(500).json({ message: "Failed to request listing removal" });
   }
 };

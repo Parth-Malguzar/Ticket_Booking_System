@@ -16,7 +16,7 @@ const UserPage = () => {
    return (
       <>
          {tab === "dashboard" && (
-            <div>User Dashboard</div>
+            <div>Bookings</div>
          )}
 
          {tab === "movies" && <Movies />}

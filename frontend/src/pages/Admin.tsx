@@ -21,7 +21,8 @@ const Admin = () => {
     const [trains, setTrains] = useState<CatalogItem[]>([])
     const [deletingItemId, setDeletingItemId] = useState<string | null>(null)
     const [rejectingItemId, setRejectingItemId] = useState<string | null>(null)
-    const [searchParams] = useSearchParams()
+
+    const [searchParams] = useSearchParams()//we can also set query params with this but for now using just search (location gives more info but for now they are doing same work)
 
     const activeTab = searchParams.get("tab") || "dashboard"
 
@@ -169,12 +170,8 @@ const Admin = () => {
                 {requests.map((request) => (
                     <div key={request.id} className="flex flex-col gap-4 rounded-2xl border border-(--app-border) bg-(--app-surface) p-4 sm:flex-row sm:items-center sm:justify-between">
                         <div className="space-y-1">
-                            <p className="text-xs uppercase tracking-[0.25em] text-(--app-muted)">Vendor request</p>
                             <p className="text-base font-semibold text-(--app-fg)">{request.name}</p>
                             <p className="text-sm text-(--app-muted)">{request.email}</p>
-                            <span className="inline-flex rounded-full bg-amber-500/10 px-3 py-1 text-xs font-medium uppercase tracking-[0.22em] text-amber-300">
-                                Pending review
-                            </span>
                         </div>
 
                         <div className="flex flex-wrap gap-3">
@@ -201,17 +198,16 @@ const Admin = () => {
         )
     }
 
-    const renderVendorList = () => {
-        if (vendors.length === 0) {
-            return <p className="text-sm text-(--app-muted)">No vendor accounts found.</p>
+    const renderActiveVendors = () => {
+        const activeVendors = vendors.filter(vendor => vendor.vendorStatus === "approved")
+        if (activeVendors.length === 0) {
+            return <p className="text-sm text-(--app-muted)">No active vendor accounts found.</p>
         }
-
         return (
             <div className="space-y-3">
-                {vendors.map((vendor) => (
+                {activeVendors.map((vendor) => (
                     <div key={vendor.id} className="flex flex-col gap-4 rounded-2xl border border-(--app-border) bg-(--app-surface) p-4 sm:flex-row sm:items-center sm:justify-between">
                         <div className="space-y-1">
-                            <p className="text-xs uppercase tracking-[0.25em] text-(--app-muted)">Vendor</p>
                             <p className="text-base font-semibold text-(--app-fg)">{vendor.name}</p>
                             <p className="text-sm text-(--app-muted)">{vendor.email}</p>
                             <div className="flex flex-wrap gap-2 pt-1 text-xs text-(--app-muted)">
@@ -220,40 +216,64 @@ const Admin = () => {
                             </div>
                         </div>
 
-                        {vendor.vendorStatus === "pending" ? (
-                            <div className="flex flex-wrap gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => handleApprove(vendor.id)}
-                                    disabled={approvingId === vendor.id}
-                                    className="rounded-xl bg-(--app-accent) px-4 py-2 text-sm font-semibold text-(--app-accent-fg) transition-all hover:bg-(--app-accent-hover) disabled:cursor-not-allowed disabled:opacity-70"
-                                >
-                                    {approvingId === vendor.id ? "Approving..." : "Approve vendor"}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => handleReject(vendor.id)}
-                                    disabled={rejectingId === vendor.id}
-                                    className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-300 transition-all hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-70"
-                                >
-                                    {rejectingId === vendor.id ? "Rejecting..." : "Reject vendor"}
-                                </button>
+                        <div className="flex flex-wrap items-center gap-3">
+                            <span className="inline-flex rounded-full border border-(--app-border) px-3 py-1 text-xs font-medium uppercase tracking-[0.22em] text-emerald-400 bg-emerald-500/10">
+                                Active vendor
+                            </span>
+                            <button
+                                type="button"
+                                onClick={() => handleDeleteAccount(vendor.id, "vendor")}
+                                disabled={deletingId === vendor.id}
+                                className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-300 transition-all hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-70"
+                            >
+                                {deletingId === vendor.id ? "Deleting..." : "Remove vendor"}
+                            </button>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        )
+    }
+
+    const renderRejectedVendors = () => {
+        const rejectedVendors = vendors.filter(vendor => vendor.vendorStatus === "rejected")
+        if (rejectedVendors.length === 0) {
+            return <p className="text-sm text-(--app-muted)">No rejected vendor accounts found.</p>
+        }
+        return (
+            <div className="space-y-3">
+                {rejectedVendors.map((vendor) => (
+                    <div key={vendor.id} className="flex flex-col gap-4 rounded-2xl border border-(--app-border) bg-(--app-surface) p-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="space-y-1">
+                            <p className="text-base font-semibold text-(--app-fg)">{vendor.name}</p>
+                            <p className="text-sm text-(--app-muted)">{vendor.email}</p>
+                            <div className="flex flex-wrap gap-2 pt-1 text-xs text-(--app-muted)">
+                                <span className="rounded-full border border-(--app-border) px-3 py-1 capitalize">{vendor.vendorStatus || "none"}</span>
+                                <span className="rounded-full border border-(--app-border) px-3 py-1">Joined {formatDate(vendor.createdAt)}</span>
                             </div>
-                        ) : (
-                            <div className="flex flex-wrap items-center gap-3">
-                                <span className="inline-flex rounded-full border border-(--app-border) px-3 py-1 text-xs font-medium uppercase tracking-[0.22em] text-(--app-muted)">
-                                    {vendor.vendorStatus === "approved" ? "Active vendor" : "Rejected vendor"}
-                                </span>
-                                <button
-                                    type="button"
-                                    onClick={() => handleDeleteAccount(vendor.id, "vendor")}
-                                    disabled={deletingId === vendor.id}
-                                    className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-300 transition-all hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-70"
-                                >
-                                    {deletingId === vendor.id ? "Deleting..." : "Remove vendor"}
-                                </button>
-                            </div>
-                        )}
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-3">
+                            <span className="inline-flex rounded-full border border-(--app-border) px-3 py-1 text-xs font-medium uppercase tracking-[0.22em] text-red-400 bg-red-500/10">
+                                Rejected vendor
+                            </span>
+                            <button
+                                type="button"
+                                onClick={() => handleApprove(vendor.id)}
+                                disabled={approvingId === vendor.id}
+                                className="rounded-xl bg-(--app-accent) px-4 py-2 text-sm font-semibold text-(--app-accent-fg) transition-all hover:bg-(--app-accent-hover) disabled:cursor-not-allowed disabled:opacity-70"
+                            >
+                                {approvingId === vendor.id ? "Approving..." : "Approve vendor"}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleDeleteAccount(vendor.id, "vendor")}
+                                disabled={deletingId === vendor.id}
+                                className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-300 transition-all hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-70"
+                            >
+                                {deletingId === vendor.id ? "Deleting..." : "Remove vendor"}
+                            </button>
+                        </div>
                     </div>
                 ))}
             </div>
@@ -308,8 +328,13 @@ const Admin = () => {
                             </div>
 
                             <div>
-                                <h2 className="text-lg font-semibold">All vendors</h2>
-                                <div className="mt-4">{renderVendorList()}</div>
+                                <h2 className="text-lg font-semibold">Active Vendors</h2>
+                                <div className="mt-4">{renderActiveVendors()}</div>
+                            </div>
+
+                            <div>
+                                <h2 className="text-lg font-semibold">Rejected Vendors</h2>
+                                <div className="mt-4">{renderRejectedVendors()}</div>
                             </div>
                         </>
                     )}
@@ -336,7 +361,7 @@ const Admin = () => {
         }
 
         if (activeTab === "movies" || activeTab === "train" || activeTab === "concert") {
-            const currentItems = {
+            const currentItems = {//shortcut to write currentItems instead of ifelse
                 movies: movies,
                 concert: concerts,
                 train: trains,
@@ -356,6 +381,8 @@ const Admin = () => {
                     ) : (
                         <div className="mt-6 space-y-4">
                             {currentItems.map((item) => (
+                                //iterate over current items like movies,etc
+                                //unique key for react
                                 <article key={item.id} className="overflow-hidden rounded-2xl border border-(--app-border) bg-(--app-surface)">
                                     <div className="flex gap-4 p-4">
                                         <img src={item.image} alt={item.title} className="h-24 w-24 rounded-2xl object-cover" />
@@ -395,10 +422,7 @@ const Admin = () => {
                                             </div>
 
                                             <div className="mt-3 flex flex-wrap gap-2 text-xs text-(--app-muted)">
-                                                <span className="rounded-full border border-(--app-border) px-2.5 py-1">{item.date}</span>
-                                                <span className="rounded-full border border-(--app-border) px-2.5 py-1">{item.time}</span>
-                                                <span className="rounded-full border border-(--app-border) px-2.5 py-1">{item.price}</span>
-                                                <span className="rounded-full border border-(--app-border) px-2.5 py-1">{item.tag}</span>
+                                                <span className="rounded-full border border-(--app-border) px-2.5 py-1">${item.price}</span>
                                             </div>
                                         </div>
                                     </div>

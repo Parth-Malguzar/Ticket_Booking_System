@@ -25,14 +25,6 @@ const loginController = async (req, res) => {
         message: "Please verify your email before logging in.",
       });
     }
-    if (user.role === "vendor" && user.vendorStatus !== "approved") {
-      return res.status(403).json({
-        message:
-          user.vendorStatus === "rejected"
-            ? "Vendor request was rejected by admin."
-            : "Vendor account is pending approval.",
-      });
-    }
     const jwtOptions = rememberMe ? { expiresIn: "2d" } : {};
     const authToken = jwt.sign(
       {
@@ -48,7 +40,7 @@ const loginController = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",//we can't use strict here because we are opening our website from external links sent in emails for auth for that lax is best
-      
+
       path: "/", //With path: "/", the auth cookie is available everywhere in the backend as long as the request matches the domain/origin rules.
     };
 

@@ -25,18 +25,17 @@ const createCatalogItemController = async (req, res) => {
         .json({ message: "Vendor approval required before adding listings" });
     }
 
-    const { category, title, image, date, time, venue, price, tag, details } =
+    const { category, title, image, venue, price, availableSeats, details } =
       req.body;
 
     if (
       !category ||
       !title ||
       !image ||
-      !date ||
-      !time ||
       !venue ||
       !price ||
-      !tag
+      availableSeats === undefined ||
+      !details
     ) {
       return res
         .status(400)
@@ -54,11 +53,9 @@ const createCatalogItemController = async (req, res) => {
       category,
       title,
       image,
-      date,
-      time,
       venue,
       price,
-      tag,
+      availableSeats: Number(availableSeats) || 0,
       details: normalizedDetails,
       status: "approved",
       createdBy: vendor._id,
@@ -71,11 +68,9 @@ const createCatalogItemController = async (req, res) => {
         category: item.category,
         title: item.title,
         image: item.image,
-        date: item.date,
-        time: item.time,
         venue: item.venue,
         price: item.price,
-        tag: item.tag,
+        availableSeats: item.availableSeats,
         details: item.details,
         status: item.status,
         createdBy: item.createdBy,

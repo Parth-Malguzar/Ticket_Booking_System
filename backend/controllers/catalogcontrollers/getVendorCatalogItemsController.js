@@ -48,7 +48,7 @@ const getVendorCatalogItemsController = async (req, res) => {
         time: item.time,
         venue: item.venue,
         price: item.price,
-        tag: item.tag,
+        availableSeats: item.availableSeats,
         details: item.details,
         status: item.status,
         createdAt: item.createdAt,

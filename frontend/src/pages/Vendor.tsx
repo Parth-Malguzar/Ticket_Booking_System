@@ -4,15 +4,14 @@ import axios from "axios"
 import toast from "react-hot-toast"
 import api from "../lib/axios.ts"
 import type { CatalogItem } from "../types"
+import { useAuthStore } from "../stores/authStore.ts"
 
 const initialForm = {
     title: "",
     image: "",
-    date: "",
-    time: "",
     venue: "",
     price: "",
-    tag: "",
+    availableSeats: "100",
     details: "",
 }
 
@@ -32,6 +31,7 @@ const categoryMeta = {
 } as const
 
 const Vendor = () => {
+    const { user } = useAuthStore()
     const [searchParams] = useSearchParams()
     const activeTab = searchParams.get("tab") || "dashboard"
     const category = activeTab === "movies" || activeTab === "train" || activeTab === "concert" ? activeTab : null
@@ -41,13 +41,14 @@ const Vendor = () => {
     const [isLoading, setIsLoading] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [deletingId, setDeletingId] = useState<string | null>(null)
-    const [stats, setStats] = useState({ totalMovies: 0, totalConcerts: 0, totalTrains: 0, movieEarnings:0,concertEarnings:0,trainEarnings:0})
+    const [stats, setStats] = useState({ totalMovies: 0, totalConcerts: 0, totalTrains: 0, movieEarnings: 0, concertEarnings: 0, trainEarnings: 0 })
 
     useEffect(() => {
         if (activeTab === "dashboard") {
             const fetchStats = async () => {
                 try {
                     const res = await api.get("/vendors/stats")
+
                     setStats({
                         totalMovies: res.data.totalMovies || 0,
                         totalConcerts: res.data.totalConcerts || 0,
@@ -131,11 +132,9 @@ const Vendor = () => {
                 category,
                 title: form.title.trim(),
                 image: form.image.trim(),
-                date: form.date.trim(),
-                time: form.time.trim(),
                 venue: form.venue.trim(),
                 price: form.price.trim(),
-                tag: form.tag.trim(),
+                availableSeats: Number(form.availableSeats) || 0,
                 details: form.details,
             }
 
@@ -176,54 +175,54 @@ const Vendor = () => {
     const renderDashboard = () => {
         return (
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-    <div className="rounded-2xl border border-(--app-border) bg-(--app-surface-2) p-4">
-        <p className="text-xs uppercase tracking-[0.25em] text-(--app-muted)">
-            Movies
-        </p>
-        <p className="mt-2 text-3xl font-semibold text-(--app-fg)">
-            {stats.totalMovies}
-        </p>
-        <p className="mt-1 text-sm text-(--app-muted)">
-            ₹{stats.movieEarnings}
-        </p>
-    </div>
+                <div className="rounded-2xl border border-(--app-border) bg-(--app-surface-2) p-4">
+                    <p className="text-xs uppercase tracking-[0.25em] text-(--app-muted)">
+                        Movies
+                    </p>
+                    <p className="mt-2 text-3xl font-semibold text-(--app-fg)">
+                        {stats.totalMovies}
+                    </p>
+                    <p className="mt-1 text-sm text-(--app-muted)">
+                        ₹{stats.movieEarnings}
+                    </p>
+                </div>
 
-    <div className="rounded-2xl border border-(--app-border) bg-(--app-surface-2) p-4">
-        <p className="text-xs uppercase tracking-[0.25em] text-(--app-muted)">
-            Concerts
-        </p>
-        <p className="mt-2 text-3xl font-semibold text-(--app-fg)">
-            {stats.totalConcerts}
-        </p>
-        <p className="mt-1 text-sm text-(--app-muted)">
-            ₹{stats.concertEarnings}
-        </p>
-    </div>
+                <div className="rounded-2xl border border-(--app-border) bg-(--app-surface-2) p-4">
+                    <p className="text-xs uppercase tracking-[0.25em] text-(--app-muted)">
+                        Concerts
+                    </p>
+                    <p className="mt-2 text-3xl font-semibold text-(--app-fg)">
+                        {stats.totalConcerts}
+                    </p>
+                    <p className="mt-1 text-sm text-(--app-muted)">
+                        ₹{stats.concertEarnings}
+                    </p>
+                </div>
 
-    <div className="rounded-2xl border border-(--app-border) bg-(--app-surface-2) p-4">
-        <p className="text-xs uppercase tracking-[0.25em] text-(--app-muted)">
-            Trains
-        </p>
-        <p className="mt-2 text-3xl font-semibold text-(--app-fg)">
-            {stats.totalTrains}
-        </p>
-        <p className="mt-1 text-sm text-(--app-muted)">
-            ₹{stats.trainEarnings}
-        </p>
-    </div>
+                <div className="rounded-2xl border border-(--app-border) bg-(--app-surface-2) p-4">
+                    <p className="text-xs uppercase tracking-[0.25em] text-(--app-muted)">
+                        Trains
+                    </p>
+                    <p className="mt-2 text-3xl font-semibold text-(--app-fg)">
+                        {stats.totalTrains}
+                    </p>
+                    <p className="mt-1 text-sm text-(--app-muted)">
+                        ₹{stats.trainEarnings}
+                    </p>
+                </div>
 
-    <div className="rounded-2xl border border-(--app-border) bg-(--app-surface-2) p-4">
-        <p className="text-xs uppercase tracking-[0.25em] text-(--app-muted)">
-            Total Earnings
-        </p>
-        <p className="mt-2 text-3xl font-semibold text-(--app-fg)">
-            ₹{stats.trainEarnings + stats.movieEarnings + stats.concertEarnings}
-        </p>
-        <p className="mt-1 text-sm text-(--app-muted)">
-            Across all listings
-        </p>
-    </div>
-</div>
+                <div className="rounded-2xl border border-(--app-border) bg-(--app-surface-2) p-4">
+                    <p className="text-xs uppercase tracking-[0.25em] text-(--app-muted)">
+                        Total Earnings
+                    </p>
+                    <p className="mt-2 text-3xl font-semibold text-(--app-fg)">
+                        ₹{stats.trainEarnings + stats.movieEarnings + stats.concertEarnings}
+                    </p>
+                    <p className="mt-1 text-sm text-(--app-muted)">
+                        Across all listings
+                    </p>
+                </div>
+            </div>
         )
     }
 
@@ -264,28 +263,6 @@ const Vendor = () => {
                             />
                         </label>
 
-                        <label className="space-y-2">
-                            <span className="text-sm text-(--app-muted)">Date</span>
-                            <input
-                                type="date"
-                                value={form.date}
-                                onChange={(event) => handleChange("date", event.target.value)}
-                                required
-                                className="w-full rounded-2xl border border-(--app-border) bg-(--app-surface) px-4 py-3 text-sm outline-none focus:border-(--app-accent)"
-                            />
-                        </label>
-
-                        <label className="space-y-2">
-                            <span className="text-sm text-(--app-muted)">Time</span>
-                            <input
-                                type="time"
-                                value={form.time}
-                                onChange={(event) => handleChange("time", event.target.value)}
-                                required
-                                className="w-full rounded-2xl border border-(--app-border) bg-(--app-surface) px-4 py-3 text-sm outline-none focus:border-(--app-accent)"
-                            />
-                        </label>
-
                         <label className="space-y-2 sm:col-span-2">
                             <span className="text-sm text-(--app-muted)">Venue / Route</span>
                             <input
@@ -306,18 +283,20 @@ const Vendor = () => {
                                 onChange={(event) => handleChange("price", event.target.value)}
                                 required
                                 className="w-full rounded-2xl border border-(--app-border) bg-(--app-surface) px-4 py-3 text-sm outline-none focus:border-(--app-accent)"
-                                placeholder="12"
+                                placeholder="$12"
                             />
                         </label>
 
                         <label className="space-y-2">
-                            <span className="text-sm text-(--app-muted)">Tag</span>
+                            <span className="text-sm text-(--app-muted)">Available Seats</span>
                             <input
-                                value={form.tag}
-                                onChange={(event) => handleChange("tag", event.target.value)}
+                                type="number"
+                                min={1}
+                                value={form.availableSeats}
+                                onChange={(event) => handleChange("availableSeats", event.target.value)}
                                 required
                                 className="w-full rounded-2xl border border-(--app-border) bg-(--app-surface) px-4 py-3 text-sm outline-none focus:border-(--app-accent)"
-                                placeholder="Action thriller"
+                                placeholder="100"
                             />
                         </label>
 
@@ -372,27 +351,75 @@ const Vendor = () => {
                                                     type="button"
                                                     onClick={() => handleDelete(item.id)}
                                                     disabled={deletingId === item.id || item.requestRemoval}
-                                                    className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-all disabled:cursor-not-allowed ${
-                                                        item.requestRemoval
-                                                            ? "border border-zinc-700 bg-zinc-800 text-zinc-500 opacity-60"
-                                                            : "border border-red-500/30 bg-red-500/10 text-red-300 hover:bg-red-500/20 disabled:opacity-70"
-                                                    }`}
+                                                    className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-all disabled:cursor-not-allowed ${item.requestRemoval
+                                                        ? "border border-zinc-700 bg-zinc-800 text-zinc-500 opacity-60"
+                                                        : "border border-red-500/30 bg-red-500/10 text-red-300 hover:bg-red-500/20 disabled:opacity-70"
+                                                        }`}
                                                 >
                                                     {deletingId === item.id ? "Removing..." : item.requestRemoval ? "Requested" : "Req Remove"}
                                                 </button>
                                             </div>
 
                                             <div className="mt-3 flex flex-wrap gap-2 text-xs text-(--app-muted)">
-                                                <span className="rounded-full border border-(--app-border) px-2.5 py-1">{item.date}</span>
-                                                <span className="rounded-full border border-(--app-border) px-2.5 py-1">{item.time}</span>
-                                                <span className="rounded-full border border-(--app-border) px-2.5 py-1">{item.price}</span>
-                                                <span className="rounded-full border border-(--app-border) px-2.5 py-1">{item.tag}</span>
+                                                <span className="rounded-full border border-(--app-border) px-2.5 py-1">${item.price}</span>
+                                                {item.availableSeats !== undefined && (
+                                                    <span className="rounded-full border border-(--app-border) px-2.5 py-1">Seats: {item.availableSeats}</span>
+                                                    //it will show only initial seats for live update will do websockets
+                                                )}
+
                                             </div>
                                         </div>
                                     </div>
                                 </article>
                             ))}
                         </div>
+                    )}
+                </div>
+            </div>
+        )
+    }
+
+    if (user && user.vendorStatus !== "approved") {
+        return (
+            <div className="min-h-[calc(100vh-8rem)] bg-(--app-bg) px-4 py-12 flex items-center justify-center text-(--app-fg)">
+                <div className="w-full max-w-lg rounded-3xl border border-(--app-border) bg-(--app-surface) p-8 text-center shadow-2xl shadow-black/30 sm:p-10">
+                    {user.vendorStatus === "rejected" ? (
+                        <>
+                            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-red-500/20 bg-red-500/10 text-red-500">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-8 w-8">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <path d="m15 9-6 6M9 9l6 6" />
+                                </svg>
+                            </div>
+                            <h1 className="mt-6 text-2xl font-bold tracking-tight">Vendor Application Rejected</h1>
+                            <p className="mt-4 text-sm text-(--app-muted) leading-relaxed">
+                                Unfortunately, your request to become a vendor has been rejected by our administrative team.
+                            </p>
+                            <p className="mt-2 text-sm text-(--app-muted)">
+                                If you believe this was an error, please reach out to <a href="mailto:support@bookmyticket.com" className="font-medium text-(--app-fg) underline hover:text-(--app-accent)">support@bookmyticket.com</a>.
+                            </p>
+                            <div className="mt-8 border-t border-(--app-border) pt-6">
+                                <p className="text-xs text-(--app-muted)">
+                                    Want to start over? You can delete this account from the top-right profile dropdown to register again.
+                                </p>
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-amber-500/20 bg-amber-500/10 text-amber-500">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-8 w-8 animate-pulse">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <path d="M12 6v6l4 2" />
+                                </svg>
+                            </div>
+                            <h1 className="mt-6 text-2xl font-bold tracking-tight">Application Under Review</h1>
+                            <p className="mt-4 text-sm text-(--app-muted) leading-relaxed">
+                                Your vendor request has been submitted successfully and is currently pending review by our administrator team.
+                            </p>
+                            <p className="mt-2 text-sm text-(--app-muted)">
+                                Once approved, your account will be granted full access to the vendor dashboard. Please check back later.
+                            </p>
+                        </>
                     )}
                 </div>
             </div>

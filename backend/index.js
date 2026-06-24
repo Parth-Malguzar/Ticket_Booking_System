@@ -8,6 +8,7 @@ import cookieParser from "cookie-parser";
 import { userRoute } from "./routes/userRoute.js";
 import { catRoute } from "./routes/catRoute.js";
 import { vendorRoute } from "./routes/vendorRoute.js";
+import { bookingRoute } from "./routes/bookingRoute.js";
 const app = express();
 // allow frontend origin and parse JSON bodies
 app.use(
@@ -31,6 +32,7 @@ app.use("/api/auth", authRoute);
 app.use("/api/users", userRoute);
 app.use("/api/vendors", vendorRoute);
 app.use("/api/catalog", catRoute);
+app.use("/api/bookings",bookingRoute)
 
 
 mongoose

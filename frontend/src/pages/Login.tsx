@@ -34,7 +34,7 @@ const Login = () => {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         toast.error(
-          error.response?.data?.message
+          error.response?.data?.message || error.message || "Failed to log in with Google"
         )
       }
     }
@@ -72,7 +72,7 @@ const Login = () => {
       if (axios.isAxiosError(error)) {
 
         toast.error(
-          error.response?.data?.message
+          error.response?.data?.message || error.message || "Failed to log in"
         )
         if (error.response?.data.message === "User not found. Please sign up.") navigate("/signup")
 

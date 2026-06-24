@@ -1,5 +1,6 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore.ts";
+//very imp zustand use
 import { useThemeStore } from "../stores/themeStore.ts";
 import { useEffect, useRef, useState } from "react";
 import { Eye, EyeOff, Trash2, User } from "lucide-react";
@@ -60,10 +61,14 @@ const roleNavItems = {
 } as const
 
 const Navbar = () => {
+    
     const { user, logout, setUser } = useAuthStore()
     const { theme, toggleTheme } = useThemeStore();
-    const location = useLocation();
-    const activeTab = new URLSearchParams(location.search).get("tab") ?? "dashboard"//object to read query params
+
+
+     const [searchParams] = useSearchParams()
+    //use location is very imp here it notices the change in url by link used to switch tabs without reloading and updates ui(for location u have to use new url search params to create an object search params is easier)
+    const activeTab = searchParams.get("tab") ?? "dashboard"//object to read query params
     const isLoginPage = location.pathname === "/login";
     const isSignupPage = location.pathname === "/signup";
     const isResetPage = location.pathname.startsWith("/reset-password")
@@ -248,7 +253,7 @@ const Navbar = () => {
                 </div>
             </nav>
 
-            {user && (
+            {user && (user.role !== "vendor" || user.vendorStatus === "approved") && (
                 <nav className="border-b border-(--app-border) bg-(--app-surface) text-(--app-fg) shadow-[0_1px_0_rgba(255,255,255,0.04)]">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex h-14 flex-wrap items-center justify-center gap-3 sm:justify-start">

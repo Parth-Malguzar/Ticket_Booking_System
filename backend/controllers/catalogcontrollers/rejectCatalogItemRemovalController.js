@@ -20,14 +20,17 @@ const rejectCatalogItemRemovalController = async (req, res) => {
     }
 
     const { id } = req.params;
-    const item = await CatalogItem.findById(id);
+    let item = await CatalogItem.findById(id);
 
     if (!item) {
       return res.status(404).json({ message: "Listing not found" });
     }
 
-    item.requestRemoval = false;
-    await item.save();
+    item = await CatalogItem.findByIdAndUpdate(//reassigning that's why let instead of const also we are using findbyidandupdate instead of .save because .save will throw error we try to remove older item with older model
+      id,
+      { requestRemoval: false },
+      { new: true }
+    );
 
     return res.status(200).json({
       message: "Removal request rejected successfully",
@@ -39,6 +42,7 @@ const rejectCatalogItemRemovalController = async (req, res) => {
       },
     });
   } catch (error) {
+    console.error("Reject removal error:", error);
     return res.status(500).json({ message: "Failed to reject removal request" });
   }
 };

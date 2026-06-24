@@ -17,7 +17,7 @@ export interface CatalogEvent {
     time: string,
     venue: string,
     price: string,
-    tag: string,
+    availableSeats?: number,
     details: string[]
 }
 
