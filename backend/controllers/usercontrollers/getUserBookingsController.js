@@ -13,8 +13,8 @@ export const getUserBookingsController = async (req, res) => {
     const formattedBookings = bookings.map((b) => {
       const item = b.item || {};
       return {
-        id: b._id.toString(),
-        userId: b.user.toString(),
+        id: b._id?.toString() || "",
+        userId: b.user?.toString() || "",
         itemId: item._id?.toString() || "",
         title: item.title || "Unknown Listing",
         image: item.image || "",
@@ -28,6 +28,7 @@ export const getUserBookingsController = async (req, res) => {
         source: b.source,
         destination: b.destination,
         status: b.status,
+        hiddenByUser: b.hiddenByUser || false,
         createdAt: b.createdAt,
       };
     });

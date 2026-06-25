@@ -5,6 +5,7 @@ import toast from "react-hot-toast"
 import { MapPin, Ticket } from "lucide-react"
 import type { CatalogEvent } from "../types"
 import { useNavigate } from "react-router-dom"
+import { useAuthStore } from "../stores/authStore.ts"
 type CatalogPageProps = {
     category: "movies" | "train" | "concert"
     eyebrow: string
@@ -14,6 +15,7 @@ type CatalogPageProps = {
 
 const CatalogPage = ({ category, eyebrow, title, description }: CatalogPageProps) => {
     const navigate = useNavigate()
+    const { user } = useAuthStore()
     const [items, setItems] = useState<CatalogEvent[]>([])
     const [isLoading, setIsLoading] = useState(true)
 
@@ -96,10 +98,12 @@ const CatalogPage = ({ category, eyebrow, title, description }: CatalogPageProps
                                             <p className="mt-1 text-2xl font-semibold">$ {item.price}</p>
                                         </div>
 
-                                        <button onClick={() => handleBookNow(item)} type="button" className="inline-flex items-center gap-2 rounded-full bg-(--app-accent) px-4 py-2 text-sm font-semibold text-(--app-accent-fg) hover:bg-(--app-accent-hover)">
-                                            <Ticket className="h-4 w-4" />
-                                            Book now
-                                        </button>
+                                        {(!user || user.role === "user") && (
+                                            <button onClick={() => handleBookNow(item)} type="button" className="inline-flex items-center gap-2 rounded-full bg-(--app-accent) px-4 py-2 text-sm font-semibold text-(--app-accent-fg) hover:bg-(--app-accent-hover)">
+                                                <Ticket className="h-4 w-4" />
+                                                Book now
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             </article>

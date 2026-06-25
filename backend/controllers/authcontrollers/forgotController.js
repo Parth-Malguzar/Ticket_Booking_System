@@ -25,19 +25,20 @@ const forgotController = async (req, res) => {
         expiresIn: "5m",
       },
     );
-    //change this link url if deploying
-    const resetLink = `http://localhost:5173/reset-password/${encodeURIComponent(resetToken)}`;
+    const frontendOrigin = process.env.FRONTEND_ORIGIN;
+    const resetLink = `${frontendOrigin}/reset-password/${encodeURIComponent(resetToken)}`;
 
+    const emailUser = process.env.EMAIL_USER;
     let transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: "parthmalguzar@gmail.com",
+        user: emailUser,
         pass: process.env.APP_PASS,
       },
     });
 
     let mailOptions = {
-      from: "parthmalguzar@gmail.com",
+      from: emailUser,
       to: `${user.email}`,
       subject: "Reset BookMyTicket's Password",
       text: resetLink,

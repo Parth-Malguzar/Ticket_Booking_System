@@ -24,7 +24,7 @@ const MoonIcon = () => (
 const roleNavItems = {
     user: [
         {
-            label: "Dashboard",
+            label: "Bookings",
             to: "/user?tab=dashboard",
             tab: "dashboard"
         },
@@ -206,19 +206,13 @@ const Navbar = () => {
                                     </p>
                                 </div>
 
-                                {user.role !== "admin" && (
+                                {user.role !== "admin" && user.role!=="vendor" && (
                                     <button className="w-full rounded-xl px-3 py-2 text-left text-sm text-(--app-fg) transition-colors hover:bg-(--app-surface-2)">
                                         Balance : ${user.balance}
                                     </button>
                                 )}
 
-                                <Link
-                                    to="/user?tab=dashboard"
-                                    onClick={() => setOpen(false)}
-                                    className="block w-full rounded-xl px-3 py-2 text-left text-sm text-(--app-fg) transition-colors hover:bg-(--app-surface-2)"
-                                >
-                                    Bookings
-                                </Link>
+
                                 <button
                                     type="button"
                                     onClick={() => {

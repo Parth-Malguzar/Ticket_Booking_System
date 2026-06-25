@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { useParams, useNavigate } from "react-router-dom"
+import { useParams, useNavigate, useSearchParams } from "react-router-dom"
 import api from "@/lib/axios"
 import axios from "axios"
 import toast from "react-hot-toast"
@@ -17,6 +17,8 @@ const initialForm = {
 const BookingPage = () => {
     const { id } = useParams()
     const navigate = useNavigate()
+    const [searchParams] = useSearchParams()
+    const bookingId = searchParams.get("bookingId")
 
     const [item, setItem] = useState<CatalogItem | null>(null)
     const [form, setForm] = useState(initialForm)
@@ -36,26 +38,67 @@ const BookingPage = () => {
         void fetchItem()
     }, [id])
 
+    useEffect(() => {
+        if (!bookingId) return;
+
+        const fetchBookingDetails = async () => {
+            try {
+                const res = await api.get("/users/bookings")
+                const bookings = res.data.bookings || []
+                const found = bookings.find((b: any) => b.id === bookingId)
+                if (found) {
+                    setForm({
+                        date: found.date,
+                        time: found.time,
+                        seats: found.seats,
+                        source: found.source || "",
+                        destination: found.destination || "",
+                    })
+                } else {
+                    toast.error("Booking not found")
+                    navigate("/user")
+                }
+            } catch (error) {
+                console.error(error)
+                toast.error("Failed to load booking details for update")
+            }
+        }
+
+        void fetchBookingDetails()
+    }, [bookingId, navigate])
+
     const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault()
         setIsSubmitting(true)
 
         try {
-            await api.post("/bookings", {
-                itemId: item?.id,
-                date: form.date,
-                time: form.time,
-                seats: form.seats,
-                source: item?.category === "train" ? form.source : undefined,
-                destination: item?.category === "train" ? form.destination : undefined,
-            })
-            toast.success("Ticket booked successfully!")
+            if (bookingId) {
+                await api.put("/bookings", {
+                    bookingId,
+                    date: form.date,
+                    time: form.time,
+                    seats: form.seats,
+                    source: item?.category === "train" ? form.source : undefined,
+                    destination: item?.category === "train" ? form.destination : undefined,
+                })
+                toast.success("Ticket updated successfully!")
+            } else {
+                await api.post("/bookings", {
+                    itemId: item?.id,
+                    date: form.date,
+                    time: form.time,
+                    seats: form.seats,
+                    source: item?.category === "train" ? form.source : undefined,
+                    destination: item?.category === "train" ? form.destination : undefined,
+                })
+                toast.success("Ticket booked successfully!")
+            }
             navigate("/user")
         } catch (error) {
             if (axios.isAxiosError(error)) {
-                toast.error(error.response?.data?.message || "Failed to book ticket")
+                toast.error(error.response?.data?.message || "Failed to submit booking")
             } else {
-                toast.error("Failed to book ticket")
+                toast.error("Failed to submit booking")
             }
         } finally {
             setIsSubmitting(false)
@@ -91,7 +134,7 @@ const BookingPage = () => {
                     className="overflow-hidden rounded-3xl border border-(--app-border) bg-(--app-surface) p-6 shadow-2xl shadow-black/30 sm:p-8"
                 >
                     <h2 className="mb-6 text-2xl font-bold tracking-tight text-(--app-fg) sm:text-3xl">
-                        Book Ticket
+                        {bookingId ? "Update Booking" : "Book Ticket"}
                     </h2>
 
                     <div className="grid gap-8 md:grid-cols-2">
@@ -253,7 +296,9 @@ const BookingPage = () => {
                                     disabled={isSubmitting}
                                     className="w-full sm:w-auto rounded-xl bg-(--app-accent) px-6 py-3.5 text-sm font-semibold text-(--app-accent-fg) transition-all hover:bg-(--app-accent-hover) hover:shadow-lg hover:shadow-(--app-accent)/20 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
                                 >
-                                    {isSubmitting ? "Booking..." : "Book Ticket"}
+                                    {isSubmitting
+                                        ? (bookingId ? "Updating..." : "Booking...")
+                                        : (bookingId ? "Update Booking" : "Book Ticket")}
                                 </button>
                             </div>
                         </div>

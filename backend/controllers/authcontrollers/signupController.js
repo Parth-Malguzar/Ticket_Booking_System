@@ -34,20 +34,20 @@ const signupController = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "1d" },
     );
-    //later change this url with domain name for now local host is okay
-    const verifyLink = `http://localhost:5173/verify-email/${encodeURIComponent(verifyToken)}`;
+    const frontendOrigin = process.env.FRONTEND_ORIGIN;
+    const verifyLink = `${frontendOrigin}/verify-email/${encodeURIComponent(verifyToken)}`;
 
-    //create an app password from google account->2step varification
+    const emailUser = process.env.EMAIL_USER;
     let transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: "parthmalguzar@gmail.com",
+        user: emailUser,
         pass: process.env.APP_PASS,
       },
     });
 
     let mailOptions = {
-      from: "parthmalguzar@gmail.com",
+      from: emailUser,
       to: `${user.email}`,
       subject: "Verify your BookMyTicket email",
       text: `Click the link to verify your email: ${verifyLink}`,

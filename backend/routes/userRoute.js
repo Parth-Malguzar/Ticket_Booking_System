@@ -10,5 +10,5 @@ const router = Router();
 
 router.get("/", protectRoute, requireRole("admin"), getUsersController);
 router.delete("/:id", protectRoute, requireRole("admin"), deleteUserController);
-router.get("/bookings",protectRoute,requireRole("user"),getUserBookingsController)
+router.get("/bookings",protectRoute,getUserBookingsController)
 export { router as userRoute };

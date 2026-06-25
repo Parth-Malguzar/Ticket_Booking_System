@@ -43,5 +43,6 @@ export interface UserBooking {
     source?: string;
     destination?: string;
     status: "pending" | "confirmed" | "cancelled";
+    hiddenByUser?: boolean;
     createdAt: string;
 }

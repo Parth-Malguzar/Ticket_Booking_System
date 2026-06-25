@@ -9,7 +9,7 @@ import Navbar from "./components/Navbar"
 import { useAuthStore } from "./stores/authStore"
 import api from "./lib/axios.ts"
 import { useThemeStore } from "./stores/themeStore"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useLocation } from "react-router-dom"
 import { Toaster } from "react-hot-toast"
 import UserPage from "./pages/UserPage.tsx"
@@ -19,7 +19,7 @@ import BookingPage from "./pages/BookingPage.tsx"
 const getRoleHomePath = (role?: string) => {
   if (role === "admin") return "/admin"
   if (role === "vendor") return "/vendor"
-  return "/"
+  return "/user?tab=dashboard"
 }
 
 function AppRoutes() {
@@ -27,6 +27,7 @@ function AppRoutes() {
   const theme = useThemeStore((state) => state.theme)
   const location = useLocation()
   const fromVerification = location.state?.fromVerification === true
+  const [authLoading, setAuthLoading] = useState(true)
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
@@ -36,6 +37,7 @@ function AppRoutes() {
   useEffect(() => {
     if (fromVerification && location.pathname === "/login") {
       setUser(null);
+      setAuthLoading(false);
       return;
     }
 
@@ -46,10 +48,20 @@ function AppRoutes() {
       } catch (err) {
         console.log(err);
         setUser(null);
+      } finally {
+        setAuthLoading(false);
       }
     };
     validate();
   }, [fromVerification, location.pathname, login, setUser]);
+
+  if (authLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-(--app-bg)">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-(--app-accent) border-t-transparent"></div>
+      </div>
+    )
+  }
 
   return (
     <>
@@ -64,18 +76,13 @@ function AppRoutes() {
         <Route path="/verify-email/:token" element={<VerifyEmail />} />
         <Route path="/admin" element={user?.role === "admin" ? <Admin /> : user ? <Navigate to={getRoleHomePath(user.role)} replace /> : <Navigate to="/login" replace />} />
         <Route path="/vendor" element={user?.role === "vendor" ? <Vendor/> : user ? <Navigate to={getRoleHomePath(user.role)} replace /> : <Navigate to="/login" replace />} />
-        <Route path="/book/:id" element={<BookingPage />} />
+        <Route path="/book/:id" element={user?.role === "user" ? <BookingPage /> : user ? <Navigate to={getRoleHomePath(user.role)} replace /> : <Navigate to="/login" replace />} />
         <Route
           path="/user"
           element={
-            user?.role === "user"
+            user
               ? <UserPage />
-              : user
-                ? <Navigate
-                  to={getRoleHomePath(user.role)}
-                  replace
-                />
-                : <Navigate
+              : <Navigate
                   to="/login"
                   replace
                 />
