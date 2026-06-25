@@ -77,6 +77,7 @@ const oauthController = async (req, res) => {
         role: user.role,
         balance: user.balance,
         vendorStatus: user.vendorStatus,
+        profilePic: user.profilePic || "",
       },
     });
   } catch (error) {

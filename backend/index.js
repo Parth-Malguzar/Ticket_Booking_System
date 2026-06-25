@@ -17,7 +17,7 @@ app.use(
     credentials: true,//imp for cookie transmission (allow it in frontend also, in axios)
   }),
 );
-app.use(express.json()); //without this req.body will be undefined
+app.use(express.json({ limit: "10mb" })); //without this req.body will be undefined, limit for uploading profile pic
 app.use(cookieParser())//to read cookies req.cookies.token
 app.use((req,res,next)=>{//didn't work as of now
 

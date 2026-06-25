@@ -44,6 +44,7 @@ const verifyEmailController = async (req, res) => {
         balance: user.balance,
         vendorStatus: user.vendorStatus,
         verified: user.verified,
+        profilePic: user.profilePic || "",
       },
     });
   } catch (error) {

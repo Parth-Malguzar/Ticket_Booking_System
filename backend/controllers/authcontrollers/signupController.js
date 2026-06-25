@@ -72,6 +72,7 @@ const signupController = async (req, res) => {
           role: user.role,
           vendorStatus: user.vendorStatus,
           verified: user.verified,
+          profilePic: user.profilePic || "",
         },
       });
     }
@@ -88,6 +89,7 @@ const signupController = async (req, res) => {
         balance: user.balance,
         vendorStatus: user.vendorStatus,
         verified: user.verified,
+        profilePic: user.profilePic || "",
       },
     });
   } catch (error) {

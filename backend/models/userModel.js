@@ -28,6 +28,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    profilePic: {
+      type: String,
+      default: "",
+    },
     balance: {
       type: Number,
       default: function () {

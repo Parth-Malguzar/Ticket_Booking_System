@@ -10,7 +10,7 @@ const meController = async (req, res) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findOne({ _id: decoded.userId }).select(
-      "name email role balance vendorStatus",
+      "name email role balance vendorStatus profilePic",
     );
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -26,6 +26,7 @@ const meController = async (req, res) => {
           role: user.role,
           balance: user.balance,
           vendorStatus: user.vendorStatus,
+          profilePic: user.profilePic || "",
         },
       });
   } catch (error) {

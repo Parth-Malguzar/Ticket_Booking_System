@@ -6,6 +6,7 @@ export interface User{
     balance:number,
     vendorStatus?: "none" | "pending" | "approved" | "rejected",
     verified?: boolean,
+    profilePic?: string,
     createdAt?: string
 }
 

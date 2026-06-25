@@ -1,9 +1,9 @@
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore.ts";
 //very imp zustand use
 import { useThemeStore } from "../stores/themeStore.ts";
 import { useEffect, useRef, useState } from "react";
-import { Eye, EyeOff, Trash2, User } from "lucide-react";
+import { Eye, EyeOff, Trash2, User, Camera, Upload } from "lucide-react";
 import api from "../lib/axios.ts";
 import toast from "react-hot-toast";
 import axios from "axios";
@@ -60,13 +60,21 @@ const roleNavItems = {
     ],
 } as const
 
+const AVATAR_PRESETS = [
+    "https://api.dicebear.com/7.x/adventurer/svg?seed=Felix",
+    "https://api.dicebear.com/7.x/adventurer/svg?seed=Aneka",
+    "https://api.dicebear.com/7.x/adventurer/svg?seed=Jack",
+    "https://api.dicebear.com/7.x/adventurer/svg?seed=Buster",
+    "https://api.dicebear.com/7.x/adventurer/svg?seed=Bella",
+];
+
 const Navbar = () => {
-    
+
     const { user, logout, setUser } = useAuthStore()
     const { theme, toggleTheme } = useThemeStore();
+    const location = useLocation();
 
-
-     const [searchParams] = useSearchParams()
+    const [searchParams] = useSearchParams()
     //use location is very imp here it notices the change in url by link used to switch tabs without reloading and updates ui(for location u have to use new url search params to create an object search params is easier)
     const activeTab = searchParams.get("tab") ?? "dashboard"//object to read query params
     const isLoginPage = location.pathname === "/login";
@@ -80,8 +88,24 @@ const Navbar = () => {
     const [showDeletePassword, setShowDeletePassword] = useState(false)
     const [isDeleting, setIsDeleting] = useState(false)
 
+    // Edit Profile Modal states
+    const [editProfilePopup, setEditProfilePopup] = useState(false)
+    const [editName, setEditName] = useState("")
+    const [editProfilePic, setEditProfilePic] = useState("")
+    const [editCurrentPassword, setEditCurrentPassword] = useState("")
+    const [editNewPassword, setEditNewPassword] = useState("")
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false)
+    const [showNewPassword, setShowNewPassword] = useState(false)
+    const [isUpdatingProfile, setIsUpdatingProfile] = useState(false)
+
     const dropdownRef = useRef<HTMLDivElement>(null)
     const delPopupRef = useRef<HTMLDivElement>(null)
+    const editProfilePopupRef = useRef<HTMLFormElement>(null)
+    useEffect(() => {
+        setOpen(false);
+        setDelPopup(false);
+        setEditProfilePopup(false);
+    }, [location])//don't use location.pathname because it doesn't check whole path
 
     useEffect(() => {
 
@@ -94,6 +118,14 @@ const Navbar = () => {
                 !delPopupRef.current.contains(e.target as Node)
             ) {
                 setDelPopup(false)
+            }
+
+            if (
+                editProfilePopup &&
+                editProfilePopupRef.current &&
+                !editProfilePopupRef.current.contains(e.target as Node)
+            ) {
+                setEditProfilePopup(false)
             }
 
             if (
@@ -151,6 +183,50 @@ const Navbar = () => {
             setIsDeleting(false)
         }
     }
+
+    const handleUpdateProfile = async (e: React.SyntheticEvent) => {
+        e.preventDefault()
+        setIsUpdatingProfile(true)
+        const loadingId = toast.loading("Updating profile...")
+
+        try {
+            const res = await api.put("/users/profile", {
+                name: editName,
+                profilePic: editProfilePic,
+                currentPassword: editCurrentPassword || undefined,
+                newPassword: editNewPassword || undefined,
+            })
+            toast.success(res.data?.message || "Profile updated", { id: loadingId })
+            setUser(res.data.user)
+            setEditProfilePopup(false)
+        } catch (error: any) {
+            console.error("Profile update error:", error)
+            const errMsg = error.response?.data?.message || "Failed to update profile"
+            toast.error(errMsg, { id: loadingId })
+        } finally {
+            setIsUpdatingProfile(false)
+        }
+    }
+    const handleProfilePicChange = (
+        e: React.ChangeEvent<HTMLInputElement>
+    ) => {
+        const file = e.target.files?.[0];
+
+        if (!file) return;
+
+        if (file.size > 500 * 1024) {
+            toast.error("Image size must be less than 500KB");
+            return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onloadend = () => {
+            setEditProfilePic(reader.result as string);
+        };
+
+        reader.readAsDataURL(file);
+    };
     const renderControls = () => (
         <>
             <button
@@ -189,10 +265,14 @@ const Navbar = () => {
                         <button
                             type="button"
                             onClick={() => setOpen(!open)}
-                            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-(--app-border) bg-(--app-surface-2) text-(--app-fg) transition-all hover:border-(--app-accent) hover:bg-(--app-accent) hover:text-(--app-accent-fg) active:scale-[0.98]"
+                            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-(--app-border) bg-(--app-surface-2) text-(--app-fg) transition-all hover:border-(--app-accent) hover:bg-(--app-accent) hover:text-(--app-accent-fg) active:scale-[0.98] overflow-hidden"
                             aria-label="Open account menu"
                         >
-                            <User size={18} />
+                            {user.profilePic ? (
+                                <img src={user.profilePic} alt="Profile" className="h-full w-full object-cover" />
+                            ) : (
+                                <User size={18} />
+                            )}
                         </button>
                         {open && (
                             <div className="absolute right-0 top-12 w-fit overflow-hidden rounded-2xl border border-(--app-border) bg-(--app-surface) p-2 shadow-2xl shadow-black/30 z-50">
@@ -201,12 +281,27 @@ const Navbar = () => {
                                         Account
                                     </p>
 
-                                    <p className="mt-1 text-sm text-(--app-fg)">
+                                    <p className="mt-1 text-sm font-semibold text-(--app-fg)">
+                                        {user.name}
+                                    </p>
+                                    <p className="text-xs text-(--app-muted) mt-0.5">
                                         {user.email}
                                     </p>
                                 </div>
-
-                                {user.role !== "admin" && user.role!=="vendor" && (
+                                <button
+                                    onClick={() => {
+                                        setOpen(false)
+                                        setEditName(user.name)
+                                        setEditProfilePic(user.profilePic || "")
+                                        setEditCurrentPassword("")
+                                        setEditNewPassword("")
+                                        setEditProfilePopup(true)
+                                    }}
+                                    className="w-full rounded-xl px-3 py-2 text-left text-sm text-(--app-fg) transition-colors hover:bg-(--app-surface-2)"
+                                >
+                                    Edit Profile
+                                </button>
+                                {user.role !== "admin" && user.role !== "vendor" && (
                                     <button className="w-full rounded-xl px-3 py-2 text-left text-sm text-(--app-fg) transition-colors hover:bg-(--app-surface-2)">
                                         Balance : ${user.balance}
                                     </button>
@@ -267,11 +362,10 @@ const Navbar = () => {
                                         <Link
                                             key={item.to}
                                             to={item.to}
-                                            className={`rounded-full px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wider transition-all active:scale-[0.98] ${
-                                                isActive
-                                                    ? "bg-(--app-accent) text-(--app-accent-fg)"
-                                                    : "text-(--app-muted) hover:bg-(--app-surface-2) hover:text-(--app-fg)"
-                                            }`}
+                                            className={`rounded-full px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wider transition-all active:scale-[0.98] ${isActive
+                                                ? "bg-(--app-accent) text-(--app-accent-fg)"
+                                                : "text-(--app-muted) hover:bg-(--app-surface-2) hover:text-(--app-fg)"
+                                                }`}
                                         >
                                             {item.label}
                                         </Link>
@@ -361,6 +455,163 @@ const Navbar = () => {
                             </button>
                         </div>
                     </div>
+                </div>
+            )}
+
+            {editProfilePopup && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm">
+                    <form
+                        onSubmit={handleUpdateProfile}
+                        ref={editProfilePopupRef}
+                        className="w-full max-w-md rounded-3xl border border-(--app-border) bg-(--app-surface) p-8 shadow-2xl shadow-black/40 text-(--app-fg) space-y-5"
+                    >
+                        <div className="text-center">
+                            <p className="text-sm uppercase tracking-[0.3em] text-(--app-muted)">Settings</p>
+                            <h2 className="mt-2 text-3xl font-semibold">Edit Profile</h2>
+                        </div>
+
+                        {/* Profile Picture Preview & Selectors */}
+                        <div className="flex flex-col items-center gap-5">
+                            <div className="flex flex-col items-center gap-3">
+                                <label
+                                    htmlFor="profile-pic-upload"
+                                    className="group relative h-24 w-24 cursor-pointer overflow-hidden rounded-full border-2 border-(--app-accent) bg-(--app-surface-2) shadow-lg transition-all hover:scale-105 active:scale-95 flex items-center justify-center"
+                                >
+                                    {editProfilePic ? (
+                                        <img src={editProfilePic} alt="Preview" className="h-full w-full object-cover transition-all group-hover:scale-110 group-hover:brightness-75" />
+                                    ) : (
+                                        <User size={40} className="text-(--app-muted) transition-all group-hover:scale-110" />
+                                    )}
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                                        <Camera size={20} className="text-white" />
+                                        <span className="text-[10px] font-bold text-white uppercase tracking-wider mt-1">Upload</span>
+                                    </div>
+                                </label>
+
+                                <input
+                                    type="file"
+                                    id="profile-pic-upload"
+                                    accept="image/*"
+                                    onChange={handleProfilePicChange}
+                                    className="hidden"
+                                />
+
+                                <label
+                                    htmlFor="profile-pic-upload"
+                                    className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-(--app-border) bg-(--app-surface-2) px-3 py-1.5 text-xs font-medium text-(--app-fg) transition-all hover:border-(--app-accent) hover:bg-(--app-accent) hover:text-(--app-accent-fg) active:scale-[0.98]"
+                                >
+                                    <Upload size={13} />
+                                    <span>Upload from Device</span>
+                                </label>
+                            </div>
+
+                            <div className="flex flex-col items-center gap-2 w-full">
+                                <span className="text-xs font-semibold text-(--app-muted) uppercase tracking-wide">
+                                    Or choose a preset avatar
+                                </span>
+                                <div className="flex gap-2 justify-center">
+                                    {AVATAR_PRESETS.map((preset) => (
+                                        <button
+                                            key={preset}
+                                            type="button"
+                                            onClick={() => setEditProfilePic(preset)}
+                                            className={`h-10 w-10 overflow-hidden rounded-full border-2 transition-all hover:scale-105 active:scale-95 ${editProfilePic === preset ? "border-(--app-accent)" : "border-transparent"
+                                                }`}
+                                        >
+                                            <img src={preset} alt="avatar option" className="h-full w-full object-cover" />
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Name Input */}
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-semibold text-(--app-fg) uppercase tracking-wide">
+                                Name
+                            </label>
+                            <input
+                                type="text"
+                                required
+                                value={editName}
+                                onChange={(e) => setEditName(e.target.value)}
+                                placeholder="Your Name"
+                                className="w-full rounded-xl border border-(--app-border) bg-(--app-surface-2) px-4 py-2.5 text-(--app-fg) outline-none transition-colors focus:border-(--app-accent)"
+                            />
+                        </div>
+
+                        {/* Password change fields (optional) */}
+                        <div className="border-t border-(--app-border)/60 pt-4 space-y-3">
+                            <h3 className="text-xs font-bold uppercase tracking-wider text-(--app-muted)">
+                                Change Password (Optional)
+                            </h3>
+
+                            {/* Current Password */}
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-medium text-(--app-fg)">
+                                    Current Password
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type={showCurrentPassword ? "text" : "password"}
+                                        value={editCurrentPassword}
+                                        onChange={(e) => setEditCurrentPassword(e.target.value)}
+                                        placeholder="••••••••"
+                                        className="w-full rounded-xl border border-(--app-border) bg-(--app-surface-2) px-4 py-2.5 pr-12 text-(--app-fg) outline-none transition-colors focus:border-(--app-accent)"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowCurrentPassword((prev) => !prev)}
+                                        className="absolute inset-y-0 right-3 flex items-center text-(--app-muted) hover:text-(--app-fg)"
+                                    >
+                                        {showCurrentPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* New Password */}
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-medium text-(--app-fg)">
+                                    New Password
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type={showNewPassword ? "text" : "password"}
+                                        value={editNewPassword}
+                                        onChange={(e) => setEditNewPassword(e.target.value)}
+                                        placeholder="••••••••"
+                                        className="w-full rounded-xl border border-(--app-border) bg-(--app-surface-2) px-4 py-2.5 pr-12 text-(--app-fg) outline-none transition-colors focus:border-(--app-accent)"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowNewPassword((prev) => !prev)}
+                                        className="absolute inset-y-0 right-3 flex items-center text-(--app-muted) hover:text-(--app-fg)"
+                                    >
+                                        {showNewPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Action buttons */}
+                        <div className="flex gap-3 pt-2">
+                            <button
+                                type="button"
+                                onClick={() => setEditProfilePopup(false)}
+                                className="flex-1 rounded-xl border border-(--app-border) bg-(--app-surface-2) px-4 py-3 font-medium text-(--app-fg) transition-all hover:border-(--app-accent) hover:bg-(--app-accent) hover:text-(--app-accent-fg) active:scale-[0.98]"
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                type="submit"
+                                disabled={isUpdatingProfile}
+                                className="flex-1 rounded-xl bg-(--app-accent) px-4 py-3 font-semibold text-(--app-accent-fg) transition-all hover:bg-(--app-accent-hover) active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
+                            >
+                                {isUpdatingProfile ? "Saving..." : "Save Changes"}
+                            </button>
+                        </div>
+                    </form>
                 </div>
             )}
         </>
