@@ -11,17 +11,23 @@ export const bookEventController = async (req, res) => {
 
     const actor = req.user;
 
-    const { itemId, date, time, seats, source, destination } = req.body;
+    const { itemId, date, time, seats, seatNumbers, source, destination } = req.body;
 
-    if (!itemId || !date || !time || !seats) {
+    let seatsToBook = Number(seats);
+    let finalSeatNumbers = seatNumbers || [];
+
+    if (Array.isArray(seatNumbers) && seatNumbers.length > 0) {
+      seatsToBook = seatNumbers.length;
+      finalSeatNumbers = seatNumbers;
+    }
+
+    if (!itemId || !date || !time || !seatsToBook) {
       await session.abortTransaction();
       session.endSession();
       return res
         .status(400)
         .json({ message: "Missing required booking details" });
     }
-
-    const seatsToBook = Number(seats);
 
     if (seatsToBook <= 0) {
       await session.abortTransaction();
@@ -31,6 +37,18 @@ export const bookEventController = async (req, res) => {
         .json({ message: "Invalid number of seats" });
     }
 
+    // Check for double booking of specific seat numbers
+    if (finalSeatNumbers.length > 0) {
+      const activeBookings = await Booking.find({ item: itemId, status: { $ne: "cancelled" } }).session(session);
+      const occupiedSeats = activeBookings.flatMap(b => b.seatNumbers || []);
+      const alreadyBooked = finalSeatNumbers.filter(s => occupiedSeats.includes(s));
+      if (alreadyBooked.length > 0) {
+        await session.abortTransaction();
+        session.endSession();
+        return res.status(400).json({ message: `Seats ${alreadyBooked.join(", ")} are already booked` });
+      }
+    }
+
     // Atomically reduce available seats
     const item = await CatalogItem.findOneAndUpdate(
       {
@@ -38,11 +56,11 @@ export const bookEventController = async (req, res) => {
         availableSeats: { $gte: seatsToBook },
       },
       {
-        $inc: { availableSeats: -seatsToBook },//done by mongodb, no read calculate write , no race condition
+        $inc: { availableSeats: -seatsToBook },
       },
       {
-        new: true,//will return updated item
-        session,//every operation with this is part of same transaction if one fails complete rollback happens
+        new: true,
+        session,
       }
     );
 
@@ -108,6 +126,7 @@ export const bookEventController = async (req, res) => {
           user: updatedUser._id,
           item: item._id,
           seats: seatsToBook,
+          seatNumbers: finalSeatNumbers,
           date,
           time,
           totalAmount,
@@ -130,7 +149,16 @@ export const bookEventController = async (req, res) => {
         seats: seatsToBook,
         type: "booking"
       });
-      
+
+      // Get updated list of occupied seats
+      const activeBookingsAfter = await Booking.find({ item: item._id, status: { $ne: "cancelled" } });
+      const occupiedSeatsAfter = activeBookingsAfter.flatMap(b => b.seatNumbers || []);
+
+      req.io.to(`item_${item._id}`).emit("seats_update", {
+        itemId: item._id.toString(),
+        availableSeats: item.availableSeats,
+        occupiedSeats: occupiedSeatsAfter
+      });
     }
 
     return res.status(201).json({

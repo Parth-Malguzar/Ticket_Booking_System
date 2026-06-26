@@ -278,6 +278,7 @@ const Vendor = () => {
   }
 
   const title = category ? categoryMeta[category].title : "Vendor Dashboard";
+ 
 
   return (
     <div className="min-h-[calc(100vh-8rem)] bg-(--app-bg) px-4 py-10 text-(--app-fg)">

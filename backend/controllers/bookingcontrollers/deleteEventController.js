@@ -103,6 +103,16 @@ export const deleteEventController = async (req, res) => {
                 seats: -seats,
                 type: "cancellation"
             });
+
+            // Get updated list of occupied seats
+            const activeBookingsAfter = await Booking.find({ item: item._id, status: { $ne: "cancelled" } });
+            const occupiedSeatsAfter = activeBookingsAfter.flatMap(b => b.seatNumbers || []);
+
+            req.io.to(`item_${item._id}`).emit("seats_update", {
+                itemId: item._id.toString(),
+                availableSeats: item.availableSeats,
+                occupiedSeats: occupiedSeatsAfter
+            });
         }
 
         return res.status(200).json({

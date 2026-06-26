@@ -10,15 +10,22 @@ export const updateEventController = async (req, res) => {
         session.startTransaction();
 
         const actor = req.user;
-        const { bookingId, date, time, seats, source, destination } = req.body;
+        const { bookingId, date, time, seats, seatNumbers, source, destination } = req.body;
 
-        if (!bookingId || !date || !time || !seats) {
+        let seatsToBook = Number(seats);
+        let finalSeatNumbers = seatNumbers || [];
+
+        if (Array.isArray(seatNumbers) && seatNumbers.length > 0) {
+            seatsToBook = seatNumbers.length;
+            finalSeatNumbers = seatNumbers;
+        }
+
+        if (!bookingId || !date || !time || !seatsToBook) {
             await session.abortTransaction();
             session.endSession();
             return res.status(400).json({ message: "Missing required update details" });
         }
 
-        const seatsToBook = Number(seats);
         if (seatsToBook <= 0) {
             await session.abortTransaction();
             session.endSession();
@@ -54,6 +61,22 @@ export const updateEventController = async (req, res) => {
             await session.abortTransaction();
             session.endSession();
             return res.status(404).json({ message: "Associated listing not found" });
+        }
+
+        // Check for double booking of specific seat numbers (excluding this booking)
+        if (finalSeatNumbers.length > 0) {
+            const activeBookings = await Booking.find({ 
+                item: itemId, 
+                _id: { $ne: bookingId },
+                status: { $ne: "cancelled" } 
+            }).session(session);
+            const occupiedSeats = activeBookings.flatMap(b => b.seatNumbers || []);
+            const alreadyBooked = finalSeatNumbers.filter(s => occupiedSeats.includes(s));
+            if (alreadyBooked.length > 0) {
+                await session.abortTransaction();
+                session.endSession();
+                return res.status(400).json({ message: `Seats ${alreadyBooked.join(", ")} are already booked` });
+            }
         }
 
         // Calculate differences in seats and amount
@@ -128,6 +151,7 @@ export const updateEventController = async (req, res) => {
 
         // 7. Update booking details
         booking.seats = seatsToBook;
+        booking.seatNumbers = finalSeatNumbers;
         booking.date = date;
         booking.time = time;
         booking.totalAmount = seatsToBook * Number(item.price || 0);
@@ -148,6 +172,15 @@ export const updateEventController = async (req, res) => {
                 amount: costDiff,
                 seats: seatsDiff,
                 type: "update"
+            });
+            // Get updated list of occupied seats
+            const activeBookingsAfter = await Booking.find({ item: item._id, status: { $ne: "cancelled" } });
+            const occupiedSeatsAfter = activeBookingsAfter.flatMap(b => b.seatNumbers || []);
+
+            req.io.to(`item_${item._id}`).emit("seats_update", {
+                itemId: item._id.toString(),
+                availableSeats: updatedItem.availableSeats,
+                occupiedSeats: occupiedSeatsAfter
             });
         }
 

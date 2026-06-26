@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import api from "../lib/axios"
 import axios from "axios"
 import toast from "react-hot-toast"
-import { MapPin, Ticket } from "lucide-react"
+import { MapPin, Ticket, Calendar, Clock } from "lucide-react"
 import type { CatalogEvent } from "../types"
 import { useNavigate } from "react-router-dom"
 import { useAuthStore } from "../stores/authStore.ts"
@@ -79,8 +79,18 @@ const CatalogPage = ({ category, eyebrow, title, description }: CatalogPageProps
 
                                     <div className="grid gap-3 text-sm text-(--app-muted)">
                                         <div className="flex items-center gap-2">
-                                            <MapPin className="h-4 w-4" />
+                                            <MapPin className="h-4 w-4 text-(--app-accent)" />
                                             <span>{item.venue}</span>
+                                        </div>
+                                        <div className="flex flex-wrap gap-4 text-xs">
+                                            <div className="flex items-center gap-1.5">
+                                                <Calendar className="h-3.5 w-3.5 text-(--app-accent)" />
+                                                <span>{item.date}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5">
+                                                <Clock className="h-3.5 w-3.5 text-(--app-accent)" />
+                                                <span>{item.time}</span>
+                                            </div>
                                         </div>
                                     </div>
 

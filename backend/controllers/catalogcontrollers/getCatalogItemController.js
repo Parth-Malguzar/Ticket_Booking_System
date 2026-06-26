@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import { User } from "../../models/userModel.js";
 import { CatalogItem } from "../../models/catalogItemModel.js";
+import { Booking } from "../../models/bookingModel.js";
 
 const getCatalogItemController = async (req, res) => {
   try {
@@ -22,6 +23,9 @@ const getCatalogItemController = async (req, res) => {
       return res.status(404).json({ message: "Listing not found" });
     }
 
+    const activeBookings = await Booking.find({ item: id, status: { $ne: "cancelled" } });
+    const occupiedSeats = activeBookings.flatMap(b => b.seatNumbers || []);
+
     return res.status(200).json({
       message: "item sent successfully",
       item: {
@@ -35,6 +39,8 @@ const getCatalogItemController = async (req, res) => {
         venue: item.venue,
         price: item.price,
         availableSeats: item.availableSeats,
+        totalSeats: item.totalSeats || (item.availableSeats + occupiedSeats.length),
+        occupiedSeats,
         details: item.details || [],
         status: item.status,
         requestRemoval: item.requestRemoval || false,

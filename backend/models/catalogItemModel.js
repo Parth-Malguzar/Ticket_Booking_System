@@ -32,6 +32,10 @@ const catalogItemSchema = new mongoose.Schema(
       type:Number,
       required:true,
     },
+    totalSeats:{
+      type:Number,
+      required:false,
+    },
     details: {
       type: [String],
       default: [],

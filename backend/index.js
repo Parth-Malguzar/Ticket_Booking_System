@@ -33,6 +33,14 @@ io.on("connection", (socket) => {
     socket.join(`admin_room`);
     console.log(`Socket ${socket.id} joined room: admin_room`);
   });
+  socket.on("join_item_room", (itemId) => {
+    socket.join(`item_${itemId}`);
+    console.log(`Socket ${socket.id} joined room: item_${itemId}`);
+  });
+  socket.on("leave_item_room", (itemId) => {
+    socket.leave(`item_${itemId}`);
+    console.log(`Socket ${socket.id} left room: item_${itemId}`);
+  });
 
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);

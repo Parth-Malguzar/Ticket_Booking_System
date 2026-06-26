@@ -22,6 +22,7 @@ export const getUserBookingsController = async (req, res) => {
         date: b.date,
         time: b.time,
         seats: b.seats,
+        seatNumbers: b.seatNumbers || [],
         venue: item.venue || "",
         price: item.price || 0,
         totalAmount: b.totalAmount,

@@ -5,11 +5,14 @@ import axios from "axios"
 import toast from "react-hot-toast"
 import type { CatalogItem } from "../types"
 import { Input } from "../components/Input"
+import { socket } from "@/lib/socket.ts"
+import SeatGrid from "@/components/vendor/SeatGrid.tsx"
 
 const initialForm = {
     date: "",
     time: "",
-    seats: 1,
+    seats: 0,
+    seatNumbers: [] as number[],
     source: "",
     destination: "",
 }
@@ -23,6 +26,7 @@ const BookingPage = () => {
     const [item, setItem] = useState<CatalogItem | null>(null)
     const [form, setForm] = useState(initialForm)
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [selectingSeats, setSelectingSeats] = useState(false)
 
     useEffect(() => {
         const fetchItem = async () => {
@@ -51,6 +55,7 @@ const BookingPage = () => {
                         date: found.date,
                         time: found.time,
                         seats: found.seats,
+                        seatNumbers: found.seatNumbers || [],
                         source: found.source || "",
                         destination: found.destination || "",
                     })
@@ -67,17 +72,54 @@ const BookingPage = () => {
         void fetchBookingDetails()
     }, [bookingId, navigate])
 
+    useEffect(() => {
+        if (!id) return;
+
+        // Join the item-specific socket room
+        socket.emit("join_item_room", id);
+
+        // Listen for real-time seats update
+        const handleSeatsUpdate = (data: { itemId: string; availableSeats: number; occupiedSeats?: number[] }) => {
+            console.log("Real-time seats update:", data);
+            if (data.itemId === id) {
+                setItem((prevItem) => {
+                    if (!prevItem) return null;
+                    return {
+                        ...prevItem,
+                        availableSeats: data.availableSeats,
+                        occupiedSeats: data.occupiedSeats || prevItem.occupiedSeats,
+                    };
+                });
+            }
+        };
+
+        socket.on("seats_update", handleSeatsUpdate);
+
+        // Cleanup on unmount/id change
+        return () => {
+            socket.emit("leave_item_room", id);
+            socket.off("seats_update", handleSeatsUpdate);
+        };
+    }, [id]);
+
     const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault()
         setIsSubmitting(true)
 
         try {
+            if (form.seatNumbers.length === 0) {
+                toast.error("Please select at least one seat.")
+                setIsSubmitting(false)
+                return
+            }
+
             if (bookingId) {
                 await api.put("/bookings", {
                     bookingId,
                     date: form.date,
                     time: form.time,
                     seats: form.seats,
+                    seatNumbers: form.seatNumbers,
                     source: item?.category === "train" ? form.source : undefined,
                     destination: item?.category === "train" ? form.destination : undefined,
                 })
@@ -88,6 +130,7 @@ const BookingPage = () => {
                     date: form.date,
                     time: form.time,
                     seats: form.seats,
+                    seatNumbers: form.seatNumbers,
                     source: item?.category === "train" ? form.source : undefined,
                     destination: item?.category === "train" ? form.destination : undefined,
                 })
@@ -264,20 +307,23 @@ const BookingPage = () => {
                                         </>
                                     )}
 
-                                    <Input
-                                        label="Number of Seats"
-                                        type="number"
-                                        min={1}
-                                        max={item.availableSeats}
-                                        value={form.seats}
-                                        onChange={(e) =>
-                                            handleChange(
-                                                "seats",
-                                                Number(e.target.value)
-                                            )
-                                        }
-                                        required
-                                    />
+                                    {form.seatNumbers.length > 0 && (
+                                        <div className="flex items-center justify-between mb-3 px-1">
+                                            <span className="text-xs uppercase tracking-wider text-(--app-muted) font-semibold">
+                                                Selected Seats
+                                            </span>
+                                            <span className="text-sm font-bold text-(--app-accent)">
+                                                {form.seatNumbers.sort((a, b) => a - b).join(", ")}
+                                            </span>
+                                        </div>
+                                    )}
+                                    <button
+                                        type="button"
+                                        onClick={() => setSelectingSeats(true)}
+                                        className="w-full rounded-xl border border-(--app-border) bg-(--app-surface) hover:bg-(--app-surface-hover) px-4 py-3.5 text-sm font-semibold text-(--app-fg) transition-all active:scale-[0.98] shadow-sm hover:shadow"
+                                    >
+                                        Select Seats
+                                    </button>
                                 </div>
                             </div>
 
@@ -305,6 +351,26 @@ const BookingPage = () => {
                     </div>
                 </form>
             </div>
+            {selectingSeats && (
+                <SeatGrid
+                    onClose={() => setSelectingSeats(false)}
+                    totalSeats={item.totalSeats || item.availableSeats || 0}
+                    occupiedSeats={
+                        (item.occupiedSeats || []).filter(
+                            (seat) => !(form.seatNumbers || []).includes(seat)
+                        )
+                    }
+                    initialSelectedSeats={form.seatNumbers}
+                    onConfirm={(selectedSeats) => {
+                        setForm((prev) => ({
+                            ...prev,
+                            seats: selectedSeats.length,
+                            seatNumbers: selectedSeats,
+                        }))
+                        setSelectingSeats(false)
+                    }}
+                />
+            )}
         </div>
     )
 }

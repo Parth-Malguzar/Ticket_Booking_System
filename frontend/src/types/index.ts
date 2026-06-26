@@ -19,6 +19,8 @@ export interface CatalogEvent {
     venue: string,
     price: string,
     availableSeats?: number,
+    totalSeats?: number,
+    occupiedSeats?: number[],
     details: string[]
 }
 
@@ -38,6 +40,7 @@ export interface UserBooking {
     date: string;
     time: string;
     seats: number;
+    seatNumbers?: number[];
     venue: string;
     price: number;
     totalAmount: number;

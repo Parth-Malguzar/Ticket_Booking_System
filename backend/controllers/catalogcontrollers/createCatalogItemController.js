@@ -56,6 +56,7 @@ const createCatalogItemController = async (req, res) => {
       venue,
       price,
       availableSeats: Number(availableSeats) || 0,
+      totalSeats: Number(availableSeats) || 0,
       details: normalizedDetails,
       status: "approved",
       createdBy: vendor._id,
