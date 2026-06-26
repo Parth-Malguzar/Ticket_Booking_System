@@ -1,4 +1,3 @@
-import jwt from "jsonwebtoken";
 import { User } from "../../models/userModel.js";
 
 const deleteUserController = async (req, res) => {
@@ -17,7 +16,12 @@ const deleteUserController = async (req, res) => {
     }
 
     await User.findByIdAndDelete(id);
-
+    if(req.io){
+      req.io.to("admin_room").emit("stats_update",{
+        type:user.role,
+        change:-1
+      });
+    }
     return res.status(200).json({
       message: "User deleted successfully",
       user: {

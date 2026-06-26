@@ -67,7 +67,12 @@ const oauthController = async (req, res) => {
     }
 
     res.cookie("token", authToken, cookieOptions);
-
+    if(req.io){
+      req.io.to("admin_room").emit("stats_update",{
+        type:user.role,
+        change:1
+      })
+    }
     return res.status(200).json({
       message: "Signed in with Google successfully.",
       user: {

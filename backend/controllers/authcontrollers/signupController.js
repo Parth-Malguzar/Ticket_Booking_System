@@ -58,7 +58,12 @@ const signupController = async (req, res) => {
     } catch (err) {
       console.error("Failed to send verification email:", err);
     }
-
+    if(req.io){
+      req.io.to("admin_room").emit("stats_update",{
+        type:user.role,
+        change:1,
+      })
+    }
     // If user is a vendor (pending), let frontend know it's pending verification/approval
     if (isVendor && email !== process.env.ADMIN) {
       return res.status(202).json({

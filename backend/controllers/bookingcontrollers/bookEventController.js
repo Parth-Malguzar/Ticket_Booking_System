@@ -80,6 +80,28 @@ export const bookEventController = async (req, res) => {
       });
     }
 
+    // Atomically credit vendor balance
+    const updatedVendor = await User.findOneAndUpdate(
+      {
+        _id: item.createdBy,
+      },
+      {
+        $inc: { balance: totalAmount },
+      },
+      {
+        new: true,
+        session,
+      }
+    );
+
+    if (!updatedVendor) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(400).json({
+        message: "Vendor account not found",
+      });
+    }
+
     const booking = await Booking.create(
       [
         {
@@ -99,6 +121,17 @@ export const bookEventController = async (req, res) => {
 
     await session.commitTransaction();
     session.endSession();
+
+    // Send real-time update to the vendor
+    if (req.io) {
+      req.io.to(`vendor_${item.createdBy}`).emit("stats_update", {
+        category: item.category,
+        amount: totalAmount,
+        seats: seatsToBook,
+        type: "booking"
+      });
+      
+    }
 
     return res.status(201).json({
       message: "Ticket booked successfully",

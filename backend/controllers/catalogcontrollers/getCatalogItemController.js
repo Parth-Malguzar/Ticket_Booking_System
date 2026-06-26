@@ -26,6 +26,7 @@ const getCatalogItemController = async (req, res) => {
       message: "item sent successfully",
       item: {
         id: item._id.toString(),
+        createdBy:item.createdBy.toString(),
         category: item.category,
         title: item.title,
         image: item.image,

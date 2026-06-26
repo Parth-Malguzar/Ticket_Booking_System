@@ -17,6 +17,7 @@
     "react-dom": "^19.2.6",
     "react-hot-toast": "^2.6.0",
     "react-router-dom": "^7.15.1",
+    "socket.io-client": "^4.8.3",
     "validator": "^13.15.35",
     "zustand": "^5.0.13"
   },
@@ -35,7 +36,6 @@
     "tailwindcss": "^4.3.0",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.59.2",
-    "vite": "^8.0.12",
-    "vite-tsconfig-paths": "^6.1.1"
+    "vite": "^8.0.12"
   }
 }

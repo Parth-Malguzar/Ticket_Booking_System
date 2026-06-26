@@ -1,19 +1,8 @@
-import jwt from "jsonwebtoken";
-import { User } from "../../models/userModel.js";
 import { CatalogItem } from "../../models/catalogItemModel.js";
 
 const rejectCatalogItemRemovalController = async (req, res) => {
   try {
-    const token = req.cookies?.token;
-    if (!token) {
-      return res.status(401).json({ message: "Not authenticated" });
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const actor = await User.findById(decoded.userId);
-    if (!actor) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    const actor = req.user;
 
     if (actor.role !== "admin") {
       return res.status(403).json({ message: "Only admins can reject removal requests" });
@@ -26,11 +15,15 @@ const rejectCatalogItemRemovalController = async (req, res) => {
       return res.status(404).json({ message: "Listing not found" });
     }
 
-    item = await CatalogItem.findByIdAndUpdate(//reassigning that's why let instead of const also we are using findbyidandupdate instead of .save because .save will throw error we try to remove older item with older model
+    item = await CatalogItem.findByIdAndUpdate(
       id,
       { requestRemoval: false },
       { new: true }
     );
+
+    if (req.io) {
+      req.io.to("admin_room").emit("stats_update");
+    }
 
     return res.status(200).json({
       message: "Removal request rejected successfully",

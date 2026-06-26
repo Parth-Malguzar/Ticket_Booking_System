@@ -6,11 +6,12 @@ import deleteCatalogItemController from "../controllers/catalogcontrollers/delet
 import requestCatalogItemRemovalController from "../controllers/catalogcontrollers/requestCatalogItemRemovalController.js";
 import rejectCatalogItemRemovalController from "../controllers/catalogcontrollers/rejectCatalogItemRemovalController.js";
 import getCatalogItemController from "../controllers/catalogcontrollers/getCatalogItemController.js";
+import { protectRoute } from "../middlewares/authMiddleware.js";
 
 const router = Router();
 router.post("/", createCatalogItemController);
 router.get("/", getVendorCatalogItemsController);
-router.delete("/:id", deleteCatalogItemController);
+router.delete("/:id", protectRoute, deleteCatalogItemController);
 
 // Handle item details by ID, passing to category catalog if the param is a known category
 router.get("/:id", (req, res, next) => {
@@ -21,7 +22,7 @@ router.get("/:id", (req, res, next) => {
 });
 
 router.get("/:category", getCatalogController);
-router.patch("/:id/request-removal", requestCatalogItemRemovalController);
-router.patch("/:id/reject-removal", rejectCatalogItemRemovalController);
+router.patch("/:id/request-removal", protectRoute, requestCatalogItemRemovalController);
+router.patch("/:id/reject-removal", protectRoute, rejectCatalogItemRemovalController);
 
 export {router as catRoute}

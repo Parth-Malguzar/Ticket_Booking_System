@@ -60,7 +60,12 @@ const createCatalogItemController = async (req, res) => {
       status: "approved",
       createdBy: vendor._id,
     });
-
+     if(req.io){
+      req.io.to("admin_room").emit("stats_update",{
+        type:category,
+        change:1,
+      })
+    }
     return res.status(201).json({
       message: "Listing created successfully",
       item: {

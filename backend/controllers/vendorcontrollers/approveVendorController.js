@@ -12,6 +12,10 @@ const approveVendorController = async (req, res) => {
     vendor.vendorStatus = "approved";
     await vendor.save();
 
+    if (req.io) {
+      req.io.to("admin_room").emit("stats_update");
+    }
+
     return res.status(200).json({
       message: "Vendor approved successfully",
       vendor: {

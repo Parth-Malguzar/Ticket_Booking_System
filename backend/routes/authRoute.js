@@ -9,6 +9,7 @@ import verifyToken from "../controllers/authcontrollers/verifyToken.js";
 import meController from "../controllers/authcontrollers/meController.js";
 import logoutController from "../controllers/authcontrollers/logoutController.js";
 import deleteController from "../controllers/authcontrollers/deleteController.js";
+import { protectRoute } from "../middlewares/authMiddleware.js";
 
 const router = Router();
 router.post("/google", oauthController);
@@ -18,8 +19,8 @@ router.post("/verify-email", verifyEmailController);
 router.post("/forgot-password", forgotController);
 router.post("/reset-password", resetController);
 router.get("/verify-reset-token/:token", verifyToken);
-router.get("/me", meController);
+router.get("/me", protectRoute, meController);
 router.post("/logout", logoutController);
-router.delete("/delete", deleteController);
+router.delete("/delete", protectRoute, deleteController);
 
 export { router as authRoute };

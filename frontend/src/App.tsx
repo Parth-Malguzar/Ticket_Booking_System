@@ -15,6 +15,7 @@ import { Toaster } from "react-hot-toast"
 import UserPage from "./pages/UserPage.tsx"
 import Vendor from "./pages/Vendor.tsx"
 import BookingPage from "./pages/BookingPage.tsx"
+import { socket } from "./lib/socket"
 
 const getRoleHomePath = (role?: string) => {
   if (role === "admin") return "/admin"
@@ -94,6 +95,47 @@ function AppRoutes() {
 }
 
 function App() {
+  const {user}=useAuthStore();
+   useEffect(() => {
+    if (user?.id) {
+      // 1. Connect socket when user is logged in
+      socket.connect();
+
+      socket.on("connect", () => {
+        console.log("Connected", socket.id);
+        if (user?.id) {
+          if (user.role === "vendor") {
+            console.log("Global Socket Connect: Emitting join_vendor_room for user:", user.id);
+            socket.emit("join_vendor_room", user.id);
+          } else if (user.role === "admin") {
+            console.log("Global Socket Connect: Emitting join_admin_room for user:", user.id);
+            socket.emit("join_admin_room");
+          }
+        }
+      });
+
+      socket.on("disconnect", (reason) => {
+        console.log("Disconnected:", reason);
+      });
+
+      socket.on("connect_error", (err) => {
+        console.log("Connect Error:", err.message);
+      });
+    } else {
+      // 2. Disconnect socket when logged out
+      socket.disconnect();
+    }
+
+    // Cleanup listeners and disconnect on unmount
+    return () => {
+      socket.disconnect();
+      socket.off("connect");
+      socket.off("disconnect");
+      socket.off("connect_error");
+    };
+  }, [user?.id]);
+
+
   return (
     <BrowserRouter>
       <AppRoutes />

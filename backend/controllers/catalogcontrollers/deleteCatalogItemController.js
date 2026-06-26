@@ -1,19 +1,8 @@
-import jwt from "jsonwebtoken";
-import { User } from "../../models/userModel.js";
 import { CatalogItem } from "../../models/catalogItemModel.js";
 
 const deleteCatalogItemController = async (req, res) => {
   try {
-    const token = req.cookies?.token;
-    if (!token) {
-      return res.status(401).json({ message: "Not authenticated" });
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const actor = await User.findById(decoded.userId);
-    if (!actor) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    const actor = req.user;
 
     if (actor.role !== "admin" && actor.role !== "vendor") {
       return res.status(403).json({ message: "Access denied" });
@@ -37,6 +26,18 @@ const deleteCatalogItemController = async (req, res) => {
 
     await CatalogItem.findByIdAndDelete(id);
 
+    if (req.io) {
+      req.io.to("admin_room").emit("stats_update", {
+        type: item.category,
+        change: -1,
+      });
+      req.io.to(`vendor_${item.createdBy}`).emit("catalog_update", {
+        itemId: item._id.toString(),
+        category: item.category,
+        action: "delete",
+      });
+    }
+
     return res.status(200).json({
       message: "Listing deleted successfully",
       item: {
@@ -46,6 +47,7 @@ const deleteCatalogItemController = async (req, res) => {
       },
     });
   } catch (error) {
+    console.error("deleteCatalogItemController error", error);
     return res.status(500).json({ message: "Failed to delete listing" });
   }
 };

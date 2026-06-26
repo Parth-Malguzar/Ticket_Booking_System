@@ -70,12 +70,40 @@ export const deleteEventController = async (req, res) => {
             return res.status(500).json({ message: "Failed to refund balance" });
         }
 
+        // 5b. Deduct from the vendor's balance (refund coverage)
+        const updatedVendor = await User.findOneAndUpdate(
+            {
+                _id: item.createdBy,
+                balance: { $gte: totalAmount }
+            },
+            {
+                $inc: { balance: -totalAmount }
+            },
+            { new: true, session }
+        );
+
+        if (!updatedVendor) {
+            await session.abortTransaction();
+            session.endSession();
+            return res.status(400).json({ message: "Insufficient vendor balance to process refund" });
+        }
+
         // 6. Update booking status to cancelled
         booking.status = "cancelled";
         await booking.save({ session });
 
         await session.commitTransaction();
         session.endSession();
+
+        // Send real-time update to the vendor
+        if (req.io) {
+            req.io.to(`vendor_${item.createdBy}`).emit("stats_update", {
+                category: item.category,
+                amount: -totalAmount,
+                seats: -seats,
+                type: "cancellation"
+            });
+        }
 
         return res.status(200).json({
             message: "Ticket cancelled successfully",
