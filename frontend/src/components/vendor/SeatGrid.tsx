@@ -65,7 +65,7 @@ export default function SeatGrid({
 
         {/* Stage/Screen Indicator */}
         <div className="my-6 flex flex-col items-center">
-          <div className="w-2/3 h-1.5 rounded-full bg-gradient-to-r from-transparent via-(--app-accent) to-transparent opacity-60 shadow-[0_4px_12px_rgba(var(--app-accent-rgb),0.5)]"></div>
+          <div className="w-2/3 h-1.5 rounded-full bg-linear-to-r from-transparent via-(--app-accent) to-transparent opacity-60 shadow-[0_4px_12px_rgba(var(--app-accent-rgb),0.5)]"></div>
           <span className="text-[10px] uppercase tracking-[0.3em] text-(--app-muted) mt-2 font-semibold">
             Screen / Stage
           </span>

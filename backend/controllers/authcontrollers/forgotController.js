@@ -1,6 +1,6 @@
 import { User } from "../../models/userModel.js";
 import jwt from "jsonwebtoken";
-import nodemailer from "nodemailer";
+import { sendEmail } from "../../services/email.js";
 const forgotController = async (req, res) => {
   try {
     const { email } = req.body;
@@ -28,23 +28,11 @@ const forgotController = async (req, res) => {
     const frontendOrigin = process.env.FRONTEND_ORIGIN;
     const resetLink = `${frontendOrigin}/reset-password/${encodeURIComponent(resetToken)}`;
 
-    const emailUser = process.env.EMAIL_USER;
-    let transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: emailUser,
-        pass: process.env.APP_PASS,
-      },
-    });
-
-    let mailOptions = {
-      from: emailUser,
-      to: `${user.email}`,
+    await sendEmail({
+      to: user.email,
       subject: "Reset BookMyTicket's Password",
       text: resetLink,
-    };
-
-    await transporter.sendMail(mailOptions);
+    });
 
     return res.status(200).json({ message: "link sent successfully" });
   } catch (error) {

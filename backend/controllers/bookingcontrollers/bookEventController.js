@@ -3,6 +3,11 @@ import { User } from "../../models/userModel.js";
 import { Booking } from "../../models/bookingModel.js";
 import { CatalogItem } from "../../models/catalogItemModel.js";
 
+import { generateQRCode } from "../../services/qr.js";
+import { generateTicketPDF } from "../../services/pdf.js";
+import { sendTicketEmail } from "../../services/email.js";
+
+
 export const bookEventController = async (req, res) => {
   const session = await mongoose.startSession();
 
@@ -41,6 +46,7 @@ export const bookEventController = async (req, res) => {
     if (finalSeatNumbers.length > 0) {
       const activeBookings = await Booking.find({ item: itemId, status: { $ne: "cancelled" } }).session(session);
       const occupiedSeats = activeBookings.flatMap(b => b.seatNumbers || []);
+      //flat map to convert 2d to 1d array
       const alreadyBooked = finalSeatNumbers.filter(s => occupiedSeats.includes(s));
       if (alreadyBooked.length > 0) {
         await session.abortTransaction();
@@ -59,7 +65,7 @@ export const bookEventController = async (req, res) => {
         $inc: { availableSeats: -seatsToBook },
       },
       {
-        new: true,
+        returnDocument: "after",
         session,
       }
     );
@@ -84,7 +90,7 @@ export const bookEventController = async (req, res) => {
         $inc: { balance: -totalAmount },
       },
       {
-        new: true,
+        returnDocument: "after",
         session,
       }
     );
@@ -107,7 +113,7 @@ export const bookEventController = async (req, res) => {
         $inc: { balance: totalAmount },
       },
       {
-        new: true,
+        returnDocument: "after",
         session,
       }
     );
@@ -156,10 +162,36 @@ export const bookEventController = async (req, res) => {
 
       req.io.to(`item_${item._id}`).emit("seats_update", {
         itemId: item._id.toString(),
-        availableSeats: item.availableSeats,
-        occupiedSeats: occupiedSeatsAfter
+        availableSeats: item.availableSeats,//available seats no.
+        occupiedSeats: occupiedSeatsAfter//occupied seats array
       });
     }
+
+
+    try {
+      const qrBuffer = await generateQRCode(booking[0]._id.toString());
+
+      const pdfBuffer = await generateTicketPDF(
+        {
+          _id: booking[0]._id,
+          movieTitle: item.title,
+          showDate: booking[0].date,
+          showTime: booking[0].time,
+          venue: item.venue,
+          seatNumbers: booking[0].seatNumbers,
+          totalAmount: booking[0].totalAmount,
+          category: item.category,
+          source: booking[0].source,
+          destination: booking[0].destination,
+        },
+        qrBuffer
+      );
+
+      await sendTicketEmail(updatedUser.email, pdfBuffer);
+    } catch (emailError) {
+      console.error("Failed to generate ticket PDF or send email:", emailError);
+    }
+
 
     return res.status(201).json({
       message: "Ticket booked successfully",

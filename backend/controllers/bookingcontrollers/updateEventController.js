@@ -95,7 +95,7 @@ export const updateEventController = async (req, res) => {
                 $inc: { availableSeats: -seatsDiff }
             },
             {
-                new: true,
+                returnDocument: "after",
                 session
             }
         );
@@ -118,7 +118,7 @@ export const updateEventController = async (req, res) => {
                 $inc: { balance: -costDiff }
             },
             {
-                new: true,
+                returnDocument: "after",
                 session
             }
         );
@@ -138,7 +138,7 @@ export const updateEventController = async (req, res) => {
                 $inc: { balance: costDiff }
             },
             {
-                new: true,
+                returnDocument: "after",
                 session
             }
         );

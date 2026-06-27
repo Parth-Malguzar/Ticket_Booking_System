@@ -18,7 +18,7 @@ const rejectCatalogItemRemovalController = async (req, res) => {
     item = await CatalogItem.findByIdAndUpdate(
       id,
       { requestRemoval: false },
-      { new: true }
+      { returnDocument: "after" }
     );
 
     if (req.io) {

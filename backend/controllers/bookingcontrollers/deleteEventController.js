@@ -48,7 +48,7 @@ export const deleteEventController = async (req, res) => {
         const item = await CatalogItem.findOneAndUpdate(
             { _id: itemId },
             { $inc: { availableSeats: seats } },
-            { new: true, session }
+            { returnDocument: "after", session }
         );
 
         if (!item) {
@@ -61,7 +61,7 @@ export const deleteEventController = async (req, res) => {
         const updatedUser = await User.findOneAndUpdate(
             { _id: actor._id },
             { $inc: { balance: totalAmount } },
-            { new: true, session }
+            { returnDocument: "after", session }
         );
 
         if (!updatedUser) {
@@ -79,7 +79,7 @@ export const deleteEventController = async (req, res) => {
             {
                 $inc: { balance: -totalAmount }
             },
-            { new: true, session }
+            { returnDocument: "after", session }
         );
 
         if (!updatedVendor) {

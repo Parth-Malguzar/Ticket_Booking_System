@@ -1,7 +1,7 @@
 import { User } from "../../models/userModel.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import nodemailer from "nodemailer";
+import { sendEmail } from "../../services/email.js";
 
 const signupController = async (req, res) => {
   const { name, email, password, rememberMe, isVendor } = req.body;
@@ -37,24 +37,12 @@ const signupController = async (req, res) => {
     const frontendOrigin = process.env.FRONTEND_ORIGIN;
     const verifyLink = `${frontendOrigin}/verify-email/${encodeURIComponent(verifyToken)}`;
 
-    const emailUser = process.env.EMAIL_USER;
-    let transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: emailUser,
-        pass: process.env.APP_PASS,
-      },
-    });
-
-    let mailOptions = {
-      from: emailUser,
-      to: `${user.email}`,
-      subject: "Verify your BookMyTicket email",
-      text: `Click the link to verify your email: ${verifyLink}`,
-    };
-
     try {
-      await transporter.sendMail(mailOptions);
+      await sendEmail({
+        to: user.email,
+        subject: "Verify your BookMyTicket email",
+        text: `Click the link to verify your email: ${verifyLink}`,
+      });
     } catch (err) {
       console.error("Failed to send verification email:", err);
     }
