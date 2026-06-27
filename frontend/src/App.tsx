@@ -6,6 +6,7 @@ import ResetPassword from "./pages/ResetPassword"
 import VerifyEmail from "./pages/VerifyEmail"
 import Admin from "./pages/Admin.tsx"
 import Navbar from "./components/Navbar"
+import Chatbot from "./components/Chatbot.tsx"
 import { useAuthStore } from "./stores/authStore"
 import api from "./lib/axios.ts"
 import { useThemeStore } from "./stores/themeStore"
@@ -90,6 +91,7 @@ function AppRoutes() {
           }
         />
       </Routes>
+      <Chatbot />
     </>
   )
 }
